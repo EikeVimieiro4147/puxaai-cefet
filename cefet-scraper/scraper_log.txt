@@ -1,0 +1,133 @@
+=== Iniciando CEFET Scraper ===
+Logando
+Logado: EIKE VIMIEIRO | 161115
+
+[1/3] Raspando histórico e currículo integral...
+Baixando Histórico de Integralização...
+Extraindo dados do PDF do currículo...
+Dados do currículo salvos em data/curriculo_integralizacao.json
+
+[2/3] Raspando turmas matriculadas/solicitadas...
+Dados das turmas salvos em data/turmas_matricula_data.json
+
+[3/3] Raspando turmas disponíveis (isso pode demorar)...
+Checando cursos disponiveis.
+Checando dados de ACIONAMENTOS ELÉTRICOS
+Checando dados de ANÁLISE DE SISTEMAS DE POTENCIA I
+Checando dados de ELETRÔNICA INDUSTRIAL
+Checando dados de INSTALAÇÕES ELÉTRICAS INDUSTRIAIS
+Checando dados de SUBESTAÇÕES INDUSTRIAIS E EQUIPAMENTOS
+Checando dados de ALGORITMOS E PROGRAMAÇÃO
+Checando dados de ÁLGEBRA LINEAR II
+Checando dados de CÁLCULO A VÁRIAS VARIÁVEIS
+Checando dados de FÍSICA I
+Checando dados de METODOLOGIA CIENTÍFICA
+Checando dados de RELAÇÕES ÉTNICO-RACIAIS E DIREITOS HUMANOS
+Checando dados de ANÁLISE DE SISTEMAS DE POTÊNCIA II
+Checando dados de DISTRIBUIÇÃO DE ENERGIA
+Checando dados de PROJETO FINAL I
+Checando dados de PROTEÇÃO DO SISTEMA ELÉTRICO
+Checando dados de ÁLGEBRA LINEAR I
+Checando dados de CÁLCULO A UMA VARIÁVEL
+Checando dados de DESENHO
+Checando dados de INTRODUÇÃO À ENGENHARIA ELÉTRICA
+Checando dados de QUÍMICA
+Checando dados de CÁLCULO ELÉTRICO DE LINHAS DE TRANSMISSÃO
+Checando dados de CONTROLES E SERVOMECANISMO II
+Checando dados de CONVERSÃO DE ENERGIA II
+Checando dados de MEDIDAS ELÉTRICAS E MAGNÉTICAS
+Checando dados de CÁLCULO NUMÉRICO
+Checando dados de CONVERSÃO DE ENERGIA I
+Checando dados de ELETROMAGNETISMO II
+Checando dados de SINAIS E SISTEMAS
+Checando dados de ESTABILIDADE EM SISTEMAS DE POTÊNCIAS
+Checando dados de ESTÁGIO SUPERVISIONADO
+Checando dados de GERAÇÃO
+Checando dados de PROJETO FINAL II
+Checando dados de SISTEMAS DE QUALIDADE
+Checando dados de TRANSITÓRIOS ELETROMAGNÉTICOS
+Checando dados de ESTRUTURAÇÃO DO SETOR ELÉTRICO
+Checando dados de TÓPICOS ESPECIAIS EM ELETRÔNICA II
+Checando dados de INTERCAMBIO ESTUDANTIL
+Checando dados de ALGORITMOS E PROGRAMAÇÃO
+Checando dados de CÁLCULO A VÁRIAS VARIÁVEIS
+Checando dados de CÁLCULO NUMÉRICO
+Checando dados de CÁLCULO NUMÉRICO
+Checando dados de FUNDAMENTOS DE PROCESSOS INDUSTRIAIS
+Checando dados de CÁLCULO NUMÉRICO
+Checando dados de INTERCÂMBIO ESTUDANTIL
+Checando dados de CONTROLES E SERVOMECANISMO II
+Checando dados de ELETROMAGNETISMO II
+Checando dados de MEDIDAS ELÉTRICAS E MAGNÉTICAS
+Checando dados de SINAIS E SISTEMAS
+Checando dados de SISTEMAS DE QUALIDADE
+Checando dados de TÓPICOS ESPECIAIS EM AUTOMAÇÃO I
+Checando dados de ANÁLISE DE REDES SOCIAIS
+Checando dados de ÁLGEBRA LINEAR I
+Checando dados de CÁLCULO A UMA VARIÁVEL
+Checando dados de DESENHO
+Checando dados de ÁLGEBRA LINEAR II
+Checando dados de CÁLCULO A VÁRIAS VARIÁVEIS
+Checando dados de FÍSICA I
+Checando dados de INTRODUÇÃO A ECONOMIA
+Checando dados de QUÍMICA
+Checando dados de RELAÇÕES ÉTNICO-RACIAIS E DIREITOS HUMANOS
+Checando dados de CÁLCULO NUMÉRICO
+Checando dados de CONTABILIDADE GERENCIAL
+Checando dados de ENGENHARIA ECONÔMICA
+Checando dados de PLANEJAMENTO DAS INSTALAÇÕES
+Checando dados de GESTÃO DE PROJETOS
+Checando dados de GESTÃO EMPREENDEDORA
+Checando dados de ALGORITMOS E PROGRAMAÇÃO
+Checando dados de ÁLGEBRA LINEAR II
+Checando dados de CÁLCULO A VÁRIAS VARIÁVEIS
+Checando dados de FÍSICA I
+Checando dados de METODOLOGIA CIENTÍFICA
+Checando dados de ÁLGEBRA LINEAR I
+Checando dados de CÁLCULO A UMA VARIÁVEL
+Checando dados de DESENHO
+Checando dados de QUÍMICA
+Checando dados de CÁLCULO NUMÉRICO
+Checando dados de ELETROMAGNETISMO II
+Checando dados de MEDIDAS ELÉTRICAS E MAGNÉTICAS
+Checando dados de SINAIS E SISTEMAS
+Checando dados de SISTEMAS DE QUALIDADE
+Checando dados de CÁLCULO NUMÉRICO
+Checando dados de CIRCUITOS INTEGRADOS
+Checando dados de CONTROLES E SERVOMECANISMO II
+Checando dados de ELETROMAGNETISMO II
+Checando dados de MEDIDAS ELÉTRICAS E MAGNÉTICAS
+Checando dados de ELEMENTOS DE ÓPTICA INTEGRADA E FOTÔNICA
+Checando dados de LINGUAGEM E TÉCNICAS DE PROGRAMAÇÃO PARA ENGENHARIA
+Checando dados de PROJETO DE CIRCUITOS IMPRESSOS
+Checando dados de SINAIS E SISTEMAS
+Checando dados de SISTEMAS DE QUALIDADE
+Checando dados de ALGORITMOS E PROGRAMAÇÃO
+Checando dados de ÁLGEBRA LINEAR II
+Checando dados de CÁLCULO A VÁRIAS VARIÁVEIS
+Checando dados de FÍSICA I
+Checando dados de ÁLGEBRA LINEAR I
+Checando dados de CÁLCULO A UMA VARIÁVEL
+Checando dados de DESENHO
+Checando dados de QUÍMICA
+Checando dados de CÁLCULO NUMÉRICO
+Checando dados de MATERIAIS DE CONSTRUÇÃO MECÂNICA
+Dados das turmas salvos em data/turmas_disponiveis_data.json
+
+=== Raspagem finalizada com sucesso! ===
+
+Iniciando transformação de dados...
+Dados salvos em  output/matricula_data.json
+
+Salvando agenda...
+Arquivo ICS gerado com sucesso em output/agenda.ics
+
+Iniciando upload para o Firebase...
+Iniciando exportacao de Horarios...
+Total de 51 disciplinas unicas formatadas para o Firebase.
+-> Exportacao de horarios finalizada.
+Iniciando exportacao do Curriculo do usuario...
+-> Curriculo transferido para o usuario 2012391GEL com 65 materias.
+=== Migracao Firebase Completada com Sucesso ===
+
+=== CONCLUIDO COM SUCESSO ===

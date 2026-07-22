@@ -1,0 +1,310 @@
+<!DOCTYPE HTML PUBLIC
+"-//W3C//DTD HTML 4.01//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+ <head>
+  <title>
+   Portal do Aluno -
+        CEFET -
+        Bem-vindo(a)
+  </title>
+  <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+  <link href="/aluno/img/favicon.jpg" rel="shortcut icon" type="image/x-icon"/>
+  <!-- CSS -->
+  <script type="text/javascript">
+   /* Start adding members resolved by '/bundles/template.css'. Bundle id is: '/bundles/template.css' */
+  </script>
+  <link href="/aluno/css/padrao.css?d=1909553717" media="screen" rel="stylesheet" type="text/css"/>
+  <link href="/aluno/css/template/portal.css?d=1533373856" media="screen" rel="stylesheet" type="text/css"/>
+  <link href="/aluno/js/jquery/jquery-ui-1.8.16.custom/css/custom-theme/jquery-ui-1.8.16.custom.css?d=1317547747" media="screen" rel="stylesheet" type="text/css"/>
+  <link href="/aluno/js/jquery/pnotify/jquery.pnotify.default.css?d=1010465667" media="screen" rel="stylesheet" type="text/css"/>
+  <link href="/aluno/js/jquery/pnotify/use for pines style icons/jquery.pnotify.default.icons.css?d=729000706" media="screen" rel="stylesheet" type="text/css"/>
+  <link href="/aluno/js/jquery/menu/menu.css?d=1847968237" media="screen" rel="stylesheet" type="text/css"/>
+  <script type="text/javascript">
+   /* Finished adding members resolved by /bundles/template.css */
+  </script>
+  <!-- JS -->
+  <script type="text/javascript">
+   /* Start adding members resolved by '/bundles/template.js'. Bundle id is: '/bundles/template.js' */
+  </script>
+  <script src="/aluno/js/jquery/jquery-ui-1.8.16.custom/js/jquery-1.6.2.min.js?d=1273113761" type="text/javascript">
+  </script>
+  <script src="/aluno/js/jquery/jquery-ui-1.8.16.custom/js/jquery-ui-1.8.16.custom.min.js?d=1347568159" type="text/javascript">
+  </script>
+  <script src="/aluno/js/jquery/jquery-ui-1.8.16.custom/development-bundle/ui/i18n/jquery.ui.datepicker-pt-BR.js?d=1965275083" type="text/javascript">
+  </script>
+  <script src="/aluno/js/jquery/pnotify/jquery.pnotify.min.js?d=55615123" type="text/javascript">
+  </script>
+  <script src="/aluno/js/jquery/menu/jquery-xqs-flyoutMenu.js?d=1332092332" type="text/javascript">
+  </script>
+  <script src="/aluno/js/jquery/menu/jquery-xqs-menubar.js?d=893585920" type="text/javascript">
+  </script>
+  <script src="/aluno/js/template/portal.js?d=84882607" type="text/javascript">
+  </script>
+  <script src="/aluno/js/functions.js?d=1944603420" type="text/javascript">
+  </script>
+  <script type="text/javascript">
+   /* Finished adding members resolved by /bundles/template.js */
+  </script>
+  <!-- TODO: após instalação em ambiente externo, colocar o googleanalytics -->
+ </head>
+ <body>
+  <noscript>
+   <div id="no-script">
+    O JavaScript está desativado ou não é suportado pelo seu navegador. Para usar o Portal do Aluno adequadamente, ative o JavaScript alterando as opções do navegador e tente novamente.
+   </div>
+  </noscript>
+  <!-- topo -->
+  <div id="topo">
+   <div class="div-manuais">
+    <img alt="Ir para a página de manuais" class="cursor-pointer" id="manuais" onclick="window.location = '/aluno/manuais.action';" src="/aluno/img/manuais.png" title="Ir para a página de manuais"/>
+   </div>
+   <div id="logo-portal">
+    <img alt="Ir para a página inicial" class="cursor-pointer" onclick="window.location = '/aluno/';" src="/aluno/img/logo_portal.png" title="Ir para a página inicial"/>
+   </div>
+   <div id="instituicao">
+    <a href="http://www.cefet-rj.br/" target="_blank" title="Ir para o Site">
+     CEFET
+    </a>
+   </div>
+  </div>
+  <div id="barra">
+   <!-- vamos ocultar inicialmente para melhorar a renderizaï¿½ï¿½o -->
+   <table align="center" cellpadding="0" cellspacing="0" style="display:none;">
+    <tbody>
+     <tr>
+      <td>
+       <span id="menu">
+        <button>
+         EIKE VIMIEIRO
+        </button>
+        <ul>
+         <!-- nï¿½o temos que ver se tem um professor, apenas verificamos se ï¿½ professor, dï¿½ problemas se acessarmos diretamente a pï¿½gina de administraï¿½ï¿½o apï¿½s o login -->
+         <li>
+          <a href="#" id="linkPerfil">
+           <img alt="" src="/aluno/img/status_online.png"/>
+           Meu Perfil
+          </a>
+          <ul>
+           <li>
+            <a href="/aluno/aluno/perfil/perfil.action" id="linkDados">
+             <img alt="" src="/aluno/img/status_online.png"/>
+             Dados Cadastrais
+            </a>
+           </li>
+           <li>
+            <a href="#" id="linkAlterSenha">
+             <img alt="" src="/aluno/img/icon_lock.png"/>
+             Alterar senha
+            </a>
+           </li>
+          </ul>
+         </li>
+         <li>
+          <a href="#" id="linkSairMenu">
+           <img alt="" src="/aluno/img/sair.png"/>
+           Sair do Sistema
+          </a>
+         </li>
+        </ul>
+       </span>
+       <span class="menutraco">
+        -
+       </span>
+       <span class="menudate">
+        Sexta-feira, 17 de Julho de 2026
+       </span>
+      </td>
+      <!-- LINK SAIR -->
+      <td align="right" style="vertical-align:middle;">
+       <a href="#" id="linkSair" title="Sair do Sistema">
+        <img alt="Sair do Sistema" src="/aluno/img/sair.png"/>
+       </a>
+      </td>
+     </tr>
+    </tbody>
+   </table>
+  </div>
+  <script type="text/javascript">
+   createLinksMenu( {
+            context: '/aluno/',
+            linkAlterSenha: '/usuario/usuario/usuario.action?br.com.asten.si.geral.web.spring.interceptors.AplicacaoWebChangeInterceptor.aplicacaoWeb=1'
+        } );
+  </script>
+  <!-- corpo -->
+  <div id="corpo">
+   <script type="text/javascript">
+    /* Start adding global members. */
+   </script>
+   <script type="text/javascript">
+    /* Finished adding global members. */
+   </script>
+   <script type="text/javascript">
+    /* Start adding members resolved by '/bundles/relatorio.css'. Bundle id is: '/bundles/relatorio.css' */
+   </script>
+   <link href="/aluno/css/aluno/relatorio/relatorio.css?d=397257947" media="screen" rel="stylesheet" type="text/css"/>
+   <script type="text/javascript">
+    /* Finished adding members resolved by /bundles/relatorio.css */
+   </script>
+   <div class="links">
+    <a href="/aluno/">
+     Início
+    </a>
+    &gt; Relatórios
+   </div>
+   <div class="page corner">
+    <div class="topopage">
+     <style type="text/css">
+      .table-topo
+    {
+        text-align : left;
+    }
+
+    .table-topo th
+    {
+        font-weight : normal;
+    }
+
+    #corpo .topopage
+    {
+        color       : #333333;
+        font-size   : 12px;
+        font-weight : normal;
+    }
+     </style>
+     <table cellpadding="3" cellspacing="3" class="table-topo" width="100%">
+      <tbody>
+       <tr>
+        <td>
+         <span class="label">
+          Matrícula:
+         </span>
+         2012391GEL
+        </td>
+        <td>
+         <span class="label">
+          Período de Matrícula:
+         </span>
+         2º Semestre / 2026
+        </td>
+       </tr>
+       <tr>
+        <td>
+         <span class="label">
+          Curso:
+         </span>
+         MAR - CURSO DE ENGENHARIA  ELÉTRICA
+        </td>
+        <td>
+         <span class="label">
+          Período Atual:
+         </span>
+         6
+        </td>
+       </tr>
+      </tbody>
+     </table>
+    </div>
+    <div class="corpopage">
+     <div class="listarelatorios">
+      <table cellpadding="5" cellspacing="5" width="100%">
+       <tbody>
+        <tr>
+         <td>
+          <ul>
+           <li>
+            Atestado Matrícula - Estrangeiros
+            <a href="/aluno/aluno/relatorio/atestadoMatriculaEstrangeiro.action?matricula=161115" title="Relatório em formato PDF">
+             <img class="imgRelatorio" src="/aluno/img/pdf.png"/>
+            </a>
+           </li>
+           <li>
+            Boletim Escolar Médio
+            <a href="/aluno/aluno/relatorio/boletimEscolarMedio.action?matricula=161115" title="Relatório em formato PDF">
+             <img class="imgRelatorio" src="/aluno/img/pdf.png"/>
+            </a>
+           </li>
+           <li>
+            Comprovante de Matrícula
+            <a href="/aluno/aluno/relatorio/comprovanteMatricula.action?matricula=161115" title="Relatório em formato PDF">
+             <img class="imgRelatorio" src="/aluno/img/pdf.png"/>
+            </a>
+           </li>
+           <li>
+            Ficha Cadastral do Aluno
+            <a href="/aluno/aluno/relatorio/fichaCadastral.action?matricula=161115" title="Relatório em formato PDF">
+             <img class="imgRelatorio" src="/aluno/img/pdf.png"/>
+            </a>
+           </li>
+           <li>
+            Histórico Integralização
+            <a href="/aluno/aluno/relatorio/integralizacaoCurricular.action?matricula=161115" title="Relatório em formato PDF">
+             <img class="imgRelatorio" src="/aluno/img/pdf.png"/>
+            </a>
+           </li>
+           <li>
+            Solicitação de Matricula
+            <a href="/aluno/aluno/relatorio/solicitacaoMatricula.action?matricula=161115" title="Relatório em formato PDF">
+             <img class="imgRelatorio" src="/aluno/img/pdf.png"/>
+            </a>
+           </li>
+           <li>
+            Comprovante de Matrícula ( SIE ) - Médio, Graduação e Pós-graduação
+            <a href="/aluno/aluno/relatorio/com/comprovanteMatricula.action?matricula=161115" title="Relatório em formato PDF">
+             <img class="imgRelatorio" src="/aluno/img/pdf.png"/>
+            </a>
+           </li>
+           <li>
+            Histórico Escolar CR - Aprovados ( SIE ) - Médio e Graduação
+            <a href="/aluno/aluno/relatorio/com/historicoEscolarCRAprovados.action?matricula=161115" title="Relatório em formato PDF">
+             <img class="imgRelatorio" src="/aluno/img/pdf.png"/>
+            </a>
+           </li>
+           <!-- RELATï¿½RIOS DEPRECADOS (EXISTE UM NO JAVA IGUAL) -->
+           <!-- FIM DE RELATï¿½RIOS DEPRECADOS (EXISTE UM NO JAVA IGUAL) -->
+          </ul>
+         </td>
+        </tr>
+       </tbody>
+      </table>
+     </div>
+     <a href="/relatorios/relatorios.action?br.com.asten.si.geral.web.spring.interceptors.AplicacaoWebChangeInterceptor.aplicacaoWeb=1" target="_blank">
+      <div class="listarelatorios linkmaisrelatorios">
+       <img alt="Mais Relatórios" src="/aluno/img/mais_relatorios.png"/>
+       Mais Relatórios
+      </div>
+     </a>
+     <div style="clear:both">
+     </div>
+    </div>
+   </div>
+   <script type="text/javascript">
+    /* Start adding global members. */
+   </script>
+   <script type="text/javascript">
+    /* Finished adding global members. */
+   </script>
+   <script type="text/javascript">
+    /* Start adding members resolved by '/bundles/relatorio.js'. Bundle id is: '/bundles/relatorio.js' */
+   </script>
+   <script src="/aluno/js/aluno/relatorio/relatorio.js" type="text/javascript">
+   </script>
+   <script type="text/javascript">
+    /* Finished adding members resolved by /bundles/relatorio.js */
+   </script>
+  </div>
+  <div id="rodape">
+   V.2.0.202306021048 - Copyright © 2023
+   <a href="http://www.avmb.com.br/" target="_blank">
+    ASTEN
+   </a>
+   .
+    
+        Conheça o
+   <a href="http://avmb-asten.blogspot.com/" target="_blank">
+    Blog
+   </a>
+   de produtos e serviços da AVMB !
+  </div>
+ </body>
+</html>
