@@ -1,0 +1,183 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 220 20% 97%;
+    --foreground: 220 30% 12%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 30% 12%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 30% 12%;
+
+    --primary: 220 70% 45%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 15% 92%;
+    --secondary-foreground: 220 30% 20%;
+
+    --muted: 220 15% 94%;
+    --muted-foreground: 220 10% 50%;
+
+    --accent: 175 60% 40%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 55%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 15% 88%;
+    --input: 220 15% 88%;
+    --ring: 220 70% 45%;
+
+    --radius: 0.625rem;
+
+    /* Schedule-specific tokens */
+    --schedule-confirmed: 220 70% 45%;
+    --schedule-confirmed-fg: 0 0% 100%;
+    --schedule-planned: 35 90% 52%;
+    --schedule-planned-fg: 0 0% 100%;
+    --schedule-conflict: 0 72% 55%;
+    --schedule-hover: 220 70% 95%;
+    --schedule-grid-line: 220 15% 90%;
+    --schedule-time-col: 220 15% 96%;
+    --schedule-header: 220 25% 16%;
+    --schedule-header-fg: 0 0% 100%;
+
+    /* Occupancy colors */
+    --occupancy-available: 145 60% 45%;
+    --occupancy-requested: 45 90% 52%;
+    --occupancy-occupied: 0 72% 55%;
+
+    /* Sidebar */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 220 30% 20%;
+    --sidebar-primary: 220 70% 45%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 15% 95%;
+    --sidebar-accent-foreground: 220 30% 20%;
+    --sidebar-border: 220 15% 90%;
+    --sidebar-ring: 220 70% 45%;
+  }
+
+  .dark {
+    --background: 220 25% 8%;
+    --foreground: 220 10% 92%;
+    --card: 220 25% 11%;
+    --card-foreground: 220 10% 92%;
+    --popover: 220 25% 11%;
+    --popover-foreground: 220 10% 92%;
+    --primary: 220 65% 55%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 20% 18%;
+    --secondary-foreground: 220 10% 85%;
+    --muted: 220 20% 16%;
+    --muted-foreground: 220 10% 55%;
+    --accent: 175 55% 45%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 62% 40%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 20% 20%;
+    --input: 220 20% 20%;
+    --ring: 220 65% 55%;
+    --schedule-confirmed: 220 65% 55%;
+    --schedule-confirmed-fg: 0 0% 100%;
+    --schedule-planned: 35 85% 55%;
+    --schedule-planned-fg: 0 0% 100%;
+    --schedule-conflict: 0 62% 50%;
+    --schedule-hover: 220 25% 15%;
+    --schedule-grid-line: 220 20% 18%;
+    --schedule-time-col: 220 25% 10%;
+    --schedule-header: 220 30% 14%;
+    --schedule-header-fg: 220 10% 90%;
+    --occupancy-available: 145 55% 40%;
+    --occupancy-requested: 45 85% 50%;
+    --occupancy-occupied: 0 62% 50%;
+    --sidebar-background: 220 25% 10%;
+    --sidebar-foreground: 220 10% 85%;
+    --sidebar-primary: 220 65% 55%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 20% 16%;
+    --sidebar-accent-foreground: 220 10% 85%;
+    --sidebar-border: 220 20% 18%;
+    --sidebar-ring: 220 65% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+}
+
+@layer components {
+  .schedule-cell {
+    @apply border-r border-b transition-colors duration-100;
+    border-color: hsl(var(--schedule-grid-line));
+  }
+
+  .schedule-cell:hover {
+    background: hsl(var(--schedule-hover));
+  }
+
+  .schedule-block-confirmed {
+    background: hsl(var(--schedule-confirmed));
+    color: hsl(var(--schedule-confirmed-fg));
+  }
+
+  .schedule-block-planned {
+    background: hsl(var(--schedule-planned));
+    color: hsl(var(--schedule-planned-fg));
+    border: 2px dashed hsl(var(--schedule-planned) / 0.6);
+  }
+
+  .schedule-block-conflict {
+    background: hsl(var(--schedule-conflict));
+    color: white;
+    @apply shadow-sm;
+  }
+
+  .occupancy-bar {
+    @apply relative w-full overflow-hidden rounded-sm;
+  }
+
+  .grid-icon {
+    @apply w-2.5 h-2.5 shrink-0;
+    color: currentColor;
+    stroke-width: 2.5px;
+  }
+
+  .drag-selection {
+
+    background: hsl(var(--primary) / 0.1);
+    border: 2px dashed hsl(var(--primary) / 0.4);
+  }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.3);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.5);
+}
