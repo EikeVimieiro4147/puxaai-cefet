@@ -20,12 +20,18 @@
     /* Linting */
     "noUnusedLocals": false,
     "noUnusedParameters": false,
-    "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true,
 
     "paths": {
       "@/*": ["./src/planner_legacy/*"]
     }
   },
-  "include": ["src"]
+  "include": [
+    "src/components",
+    "src/lib",
+    "src/App.tsx",
+    "src/main.tsx",
+    "src/types.ts",
+    "src/constants.ts"
+  ]
 }

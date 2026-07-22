@@ -34,7 +34,7 @@ export default function TerminalView({ matricula, onFinish }: { matricula: strin
 
   // Pool de logs para ler stdout da engine python
   useEffect(() => {
-    let timeout: NodeJS.Timeout;
+    let timeout: ReturnType<typeof setTimeout>;
     const fetchLogs = async () => {
       try {
         const res = await axios.get(`${API_BASE_URL}/api/stream_logs`);

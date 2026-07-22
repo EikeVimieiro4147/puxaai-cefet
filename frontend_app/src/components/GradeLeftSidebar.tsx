@@ -12,6 +12,7 @@ interface GradeLeftSidebarProps {
   getCourseStatus: (course: Course) => CourseStatus;
   onToggle: (courseId: string) => void;
   onHover: (courseId: string | null) => void;
+  hoveredId?: string | null;
   plannedIds: Set<string>;
   completedCodes: string[];
 }
@@ -22,6 +23,7 @@ export function GradeLeftSidebar({
   getCourseStatus,
   onToggle,
   onHover,
+  hoveredId,
   plannedIds,
   completedCodes
 }: GradeLeftSidebarProps) {
@@ -29,8 +31,8 @@ export function GradeLeftSidebar({
   const [isOptativasExpanded, setIsOptativasExpanded] = useState(false);
 
   // Separate core and elective courses
-  const coreCourses = courses.filter(c => c.period !== 0 && c.period !== '0');
-  const electiveCourses = courses.filter(c => c.period === 0 || c.period === '0');
+  const coreCourses = courses.filter(c => c.period !== 0);
+  const electiveCourses = courses.filter(c => c.period === 0);
 
   // Group core courses by discipline name
   const groupedCore = coreCourses.reduce<Record<string, Course[]>>((acc, course) => {
