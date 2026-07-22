@@ -786,14 +786,6 @@ export default function GradeView({ matricula, onLogout, onOpenTutorial }: Grade
                  )}
               </button>
 
-              {/* Export Button */}
-              <button 
-                onClick={() => setIsExportOpen(true)}
-                className="p-2.5 rounded-xl transition-all text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 mt-auto"
-                title="Exportar Grade Horária"
-              >
-                 <Download className="w-5 h-5 text-indigo-600" />
-              </button>
             </div>
           ) : (
             /* EXPANDED SIDEBAR (w-[340px]) */
