@@ -125,7 +125,7 @@ export default function DashboardView({ matricula, onLogout, onOpenTutorial }: D
         setError(res.data.message || 'Erro desconhecido ao carregar formato da Matriz.');
       }
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Falha ao conectar com o Servidor Local Python na porta 5000.');
+      setError(err.response?.data?.message || 'Falha ao conectar com o servidor da API. Verifique se o backend no Render está ativo.');
     } finally {
       setLoading(false);
     }
