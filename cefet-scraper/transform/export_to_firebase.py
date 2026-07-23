@@ -41,12 +41,14 @@ def init_firebase():
     return firestore.client()
 
 def export_horarios(db):
+    if not db:
+        raise RuntimeError("Firebase DB não foi inicializado. Verifique firebase-credentials.json.")
+        
     print("Iniciando exportacao de Horarios...")
     json_path = os.path.join(os.path.dirname(__file__), "..", "output", "matricula_data.json")
     
     if not os.path.exists(json_path):
-        print("Aviso: arquivo matricula_data.json nao encontrado. Execute o scraper primeiro.")
-        return
+        raise FileNotFoundError("Arquivo matricula_data.json nao encontrado. Execute o scraper primeiro.")
         
     with open(json_path, "r", encoding="utf-8") as f:
         data_json = json.load(f)
@@ -114,11 +116,13 @@ def export_horarios(db):
     print("-> Exportacao de horarios finalizada.")
 
 def export_curriculo(db):
+    if not db:
+        raise RuntimeError("Firebase DB não foi inicializado. Verifique firebase-credentials.json.")
+
     print("Iniciando exportacao do Curriculo do usuario...")
     json_path = os.path.join(os.path.dirname(__file__), "..", "data", "curriculo_integralizacao.json")
     if not os.path.exists(json_path):
-        print("Data de curriculo inexistente. Execute o scraper primeiro.")
-        return
+        raise FileNotFoundError("Arquivo curriculo_integralizacao.json inexistente. Execute a raspagem do histórico primeiro.")
         
     with open(json_path, "r", encoding="utf-8") as f:
         data = json.load(f)
@@ -126,8 +130,7 @@ def export_curriculo(db):
     aluno_info = data.get("aluno", {})
     matricula = aluno_info.get("matricula")
     if not matricula:
-        print("Aviso: Sem matricula no JSON. Cancelando.")
-        return
+        raise ValueError("Sem matricula encontrada no JSON do currículo.")
         
     doc_ref = db.collection("users").document(matricula)
     
@@ -135,11 +138,13 @@ def export_curriculo(db):
         "nome": aluno_info.get("nome", ""),
         "curso": aluno_info.get("curso", ""),
         "periodo_atual": aluno_info.get("periodo_atual", 0),
-        "carga_horaria": data.get("carga_horaria", {})
+        "carga_horaria": data.get("carga_horaria", {}),
+        "isPublic": True,
+        "plannedIds": []
     }
     
     # Save the root user document
-    doc_ref.set(user_data)
+    doc_ref.set(user_data, merge=True)
     
     # Save subcollections
     batch = db.batch()
@@ -172,15 +177,17 @@ def export_curriculo(db):
         
     print(f"-> Curriculo transferido para o usuario {matricula} com {total} materias.")
 
-
 def main():
     try:
         db = init_firebase()
+        if not db:
+            raise RuntimeError("Falha ao conectar com o Firebase.")
         export_horarios(db)
         export_curriculo(db)
         print("=== Migracao Firebase Completada com Sucesso ===")
     except Exception as e:
-        print(f"=== ERRO: {e} ===")
+        print(f"=== ERRO NA EXPORTAÇÃO FIREBASE: {e} ===")
+        raise e
         
 if __name__ == "__main__":
     main()

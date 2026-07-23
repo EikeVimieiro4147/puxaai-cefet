@@ -42,7 +42,7 @@ def get_historico_integralizacao(session: requests.Session, matricula: str):
     }
     
     # Regex compiladas
-    pat_disc = re.compile(r"^([A-Z0-9]+)\s+(.+?)\s+(\d+)\s+(\d+)\s+(Vencido|Não Vencido)\s+(\d+)$")
+    pat_disc = re.compile(r"^([A-Z0-9]{4,10})\s+(.+?)\s+(\d+)\s+(\d+)\s+([A-Za-zÀ-ÿ\.\s]+?)\s+(\d+)$")
     pat_aluno = re.compile(r"^Aluno:\s+(.+?)\s+Matrícula:\s+(\w+)$")
     pat_curso = re.compile(r"^Curso:\s+(.+?)\s+Período:\s+(\d+)$")
     pat_obr = re.compile(r"^OBRIGATÓRIAS\s+(\d+)\s+(\d+)$")
@@ -66,7 +66,7 @@ def get_historico_integralizacao(session: requests.Session, matricula: str):
                             "disciplina": nome,
                             "carga": int(carga),
                             "creditos": int(creditos),
-                            "situacao": situacao,
+                            "situacao": situacao.strip(),
                             "periodo": int(periodo)
                         })
                         continue
@@ -103,7 +103,7 @@ def get_historico_integralizacao(session: requests.Session, matricula: str):
 
     except Exception as e:
         print("Erro ao processar PDF com pdfplumber:", e)
-        return []
+        raise e
 
     with open(SAVE_JSON_PATH, "w", encoding="utf-8") as f:
         json.dump(resultado, f, indent=4, ensure_ascii=False)
