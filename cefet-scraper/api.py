@@ -139,10 +139,15 @@ def get_curriculo(matricula):
     try:
         matricula_upper = matricula.upper()
         db = init_firebase()
+        if not db:
+            return jsonify({"status": "error", "message": "Banco de dados Firebase indisponível."}), 500
         
         # Get user root document for metadata
         user_doc = db.collection('users').document(matricula_upper).get()
-        user_info = user_doc.to_dict() if user_doc.exists else {}
+        if not user_doc.exists:
+            return jsonify({"status": "error", "message": "Dados não encontrados no banco. Faça a sincronização primeiro!"}), 404
+            
+        user_info = user_doc.to_dict() or {}
 
         # Get curriculum subcollection
         docs = db.collection('users').document(matricula_upper).collection('curriculo').stream()
@@ -154,7 +159,7 @@ def get_curriculo(matricula):
             "curriculo": data
         }), 200
     except Exception as e:
-        return jsonify({"status": "error", "message": str(e)}), 500
+        return jsonify({"status": "error", "message": f"Erro ao consultar currículo: {str(e)}"}), 500
 
 @app.route('/api/social/privacy', methods=['POST'])
 def toggle_privacy():
