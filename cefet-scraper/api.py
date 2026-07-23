@@ -49,8 +49,13 @@ def bg_task(matricula, senha):
         sys.stderr = sys.__stderr__
 
 app = Flask(__name__)
-# Enable CORS so the React frontend running on another port can communicate with this API
-CORS(app)
+# Enable CORS for all routes and origins to allow cross-origin requests from Vercel
+CORS(app, resources={r"/*": {"origins": "*"}})
+
+@app.route('/', methods=['GET'])
+@app.route('/health', methods=['GET'])
+def health_check():
+    return jsonify({"status": "online", "message": "PuxaAi API Backend is running!"}), 200
 
 @app.route('/api/sync', methods=['POST'])
 def sync_data():

@@ -19,6 +19,7 @@ def init_firebase():
                 
         # Fallback to local json file
         possible_paths = [
+            os.path.abspath(os.path.join(os.getcwd(), "firebase-credentials.json")),
             os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "firebase-credentials.json")),
             os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "firebase-credentials.json")),
             os.path.abspath(os.path.join(os.path.dirname(__file__), "firebase-credentials.json")),
