@@ -459,7 +459,12 @@ export default function GradeView({ matricula, onLogout, onOpenTutorial }: Grade
 
       } catch (err: any) {
         console.error(err);
-        setError(err.message || 'Ocorreu um erro no carregamento da Grade.');
+        const errMsg = err.response?.data?.message || err.message;
+        if (errMsg?.includes('404')) {
+          setError('Dados de currículo não encontrados para esta matrícula. Por favor, realize a sincronização dos seus dados no menu inicial.');
+        } else {
+          setError(errMsg || 'Ocorreu um erro no carregamento da Grade.');
+        }
       } finally {
         setIsFetchingData(false);
       }

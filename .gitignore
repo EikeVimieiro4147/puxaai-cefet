@@ -1,0 +1,7 @@
+firebase-credentials.json
+.env
+__pycache__/
+output/
+data/
+node_modules/
+.venv/
