@@ -49,8 +49,10 @@ def transform_data(id, data, requisitos):
     Trata as informações da turma para o formato esperado
     """
 
-    code = clean_str(data["Disciplina"])
-    name = clean_str(data["Nome"])
+    subject_name = clean_str(data["Disciplina"])
+    class_code = clean_str(data["Nome"])
+    code = class_code
+    name = subject_name
     degree = clean_str(data['Curso'])
 
     if "CURSO DE " in degree:

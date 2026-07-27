@@ -18,26 +18,30 @@ export function transformRawCourse(raw: RawCourseJSON, allRaw: RawCourseJSON[], 
         };
     });
 
+    // Detect if name is a class code (e.g., "101020", "101021-A", "272549") and code is the subject name (e.g., "ACIONAMENTOS ELETRICOS")
+    const isNameClassCode = /^[\d\-\.\sA-Z0-9]{1,8}$/.test(raw.name.trim()) && /[a-zA-Z]{3,}/.test(raw.code);
+    const subjectName = isNameClassCode ? raw.code : raw.name;
+    const classCode = isNameClassCode ? raw.name : raw.code;
+
     // Calculate unlocks: which other courses have this course code as a prerequisite
     const unlocks = [...new Set(allRaw
         .filter(c => c.pre_requisits.includes(raw.code))
         .map(c => c.code))];
 
-
     const prerequisitesMet = raw.pre_requisits.every(req => completedCodes.includes(req));
 
     return {
         id: raw.id,
-        code: raw.code,
-        name: raw.name,
+        code: classCode,
+        name: subjectName,
         degree: raw.degree,
         professor: raw.professors.join(', '),
-        period: parseInt(raw.period, 10),
+        period: parseInt(raw.period, 10) || 1,
         slots,
         occupancy: {
-            total: parseInt(raw.occupancy.total, 10),
-            occupied: parseInt(raw.occupancy.occupied, 10),
-            requested: parseInt(raw.occupancy.requested, 10),
+            total: parseInt(raw.occupancy.total, 10) || 0,
+            occupied: parseInt(raw.occupancy.occupied, 10) || 0,
+            requested: parseInt(raw.occupancy.requested, 10) || 0,
         },
         prerequisites: raw.pre_requisits,
         prerequisitesMet,
