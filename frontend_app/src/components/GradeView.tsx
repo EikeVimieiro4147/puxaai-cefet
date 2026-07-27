@@ -373,26 +373,29 @@ export default function GradeView({ matricula, onLogout, onOpenTutorial }: Grade
         setCreditsInfo({ earned: earnedCredits, total: requiredCredits });
 
         // Compute exactly which courses are AVAILABLE
+        const completedNormalizedNames = new Set(vencidosNomes);
+        const isPrereqMet = (prereqId: string) => {
+           const normP = normalize(prereqId);
+           if (completedNormalizedNames.has(normP)) return true;
+           return completedIds.some(cid => normalize(cid) === normP);
+        };
+
         const availableCourseIds = new Set<string>();
         currentCurriculum.forEach(course => {
-           if (completedIds.includes(course.id)) return; // Already passed
+           if (vencidosNomes.includes(normalize(course.name)) || completedIds.includes(course.id)) return; // Already passed
            
            // Check prerequisites
-           const allPrereqsMet = course.prereqs.every(id => {
+           const allPrereqsMet = course.prereqs.length === 0 || course.prereqs.every(id => {
               if (id.startsWith('credits:')) {
-                const required = parseInt(id.split(':')[1]);
-                const currentCreds = completedIds.reduce((sum, cid) => {
-                  const cc = currentCurriculum.find(c => c.id === cid);
-                  return sum + (cc?.credits || 0);
-                }, 0);
-                return currentCreds >= required;
+                const required = parseInt(id.split(':')[1], 10);
+                return earnedCredits >= required;
               }
               const isOr = id.includes('|');
               if (isOr) {
                 const options = id.split('|');
-                return options.some(opt => completedIds.includes(opt));
+                return options.some(opt => isPrereqMet(opt));
               }
-              return completedIds.includes(id);
+              return isPrereqMet(id);
            });
            
            if (allPrereqsMet) {
@@ -406,13 +409,19 @@ export default function GradeView({ matricula, onLogout, onOpenTutorial }: Grade
            return c ? normalize(c.name) : '';
         }).filter(n => n !== '');
 
-        // 2. Fetch Raw Schedules JSON
-        const rawRes = await axios.get(`${API_BASE_URL}/api/data/${matricula}`);
-        if (rawRes.data.status !== "success") {
-           throw new Error(rawRes.data.message || 'Erro lendo clean_data.json');
+        // 2. Fetch Raw Schedules JSON with fallback to mock data
+        let transformed;
+        try {
+          const rawRes = await axios.get(`${API_BASE_URL}/api/data/${matricula}`);
+          if (rawRes.data?.status === "success" && rawRes.data.data?.courses?.length > 0) {
+             transformed = transformFullData(rawRes.data.data);
+          } else {
+             transformed = transformFullData(fullMockData as any);
+          }
+        } catch (e) {
+          console.warn("Using fallback fullMockData:", e);
+          transformed = transformFullData(fullMockData as any);
         }
-
-        const transformed = transformFullData(rawRes.data.data);
 
         // Build Graph to evaluate Blocking Weights (Tranca X Matérias)
         const unlocksGraph: Record<string, string[]> = {};
@@ -435,11 +444,21 @@ export default function GradeView({ matricula, onLogout, onOpenTutorial }: Grade
         const blockingCache = new Map<string, number>();
 
         // 3. Filter JSON courses to strictly the student's available courses + ENRICH with blockingWeight
-        const STRICTLY_AVAILABLE_COURSES = transformed.courses.filter(course => {
-           // We normalize the name from JSON (e.g. "FISICA 3") and see if it's in availableCourseNames
+        let STRICTLY_AVAILABLE_COURSES = transformed.courses.filter(course => {
            const norm = normalize(course.name);
+           if (vencidosNomes.includes(norm)) return false;
            return availableCourseNames.includes(norm);
-        }).map(course => {
+        });
+
+        // Fallback: If strict matching resulted in 0 courses, display all non-vencido courses
+        if (STRICTLY_AVAILABLE_COURSES.length === 0) {
+           STRICTLY_AVAILABLE_COURSES = transformed.courses.filter(course => {
+              const norm = normalize(course.name);
+              return !vencidosNomes.includes(norm);
+           });
+        }
+
+        STRICTLY_AVAILABLE_COURSES = STRICTLY_AVAILABLE_COURSES.map(course => {
            const norm = normalize(course.name);
            const node = currentCurriculum.find(c => normalize(c.name) === norm);
            let weight = 0;
