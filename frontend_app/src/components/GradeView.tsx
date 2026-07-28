@@ -9,7 +9,8 @@ import { FilterPanel } from '@/components/FilterPanel';
 import { GradeLeftSidebar } from './GradeLeftSidebar';
 import { ErrorBoundary } from './ErrorBoundary';
 import { TooltipProvider } from '@/components/ui/tooltip';
-import { COURSES_LIST, CURRICULA } from '../constants';
+import { COURSES_LIST, CURRICULA, SCHEDULE_RAW_DATA } from '../constants';
+import { fullMockData } from '@/data/fullMockData';
 import { useToast } from '@/components/ui/use-toast';
 import { DAY_LABELS, type DayOfWeek } from '@/types/schedule';
 import { LoadingTips } from './LoadingTips';
@@ -416,18 +417,18 @@ export default function GradeView({ matricula, onLogout, onOpenTutorial, onStart
            return c ? normalize(c.name) : '';
         }).filter(n => n !== '');
 
-        // 2. Fetch Raw Schedules JSON with fallback to mock data
+        // 2. Fetch Raw Schedules JSON with fallback to SCHEDULE_RAW_DATA or fullMockData
         let transformed;
         try {
           const rawRes = await axios.get(`${API_BASE_URL}/api/data/${matricula}`);
           if (rawRes.data?.status === "success" && rawRes.data.data?.courses?.length > 0) {
              transformed = transformFullData(rawRes.data.data);
           } else {
-             transformed = transformFullData(fullMockData as any);
+             transformed = transformFullData((SCHEDULE_RAW_DATA || fullMockData) as any);
           }
         } catch (e) {
-          console.warn("Using fallback fullMockData:", e);
-          transformed = transformFullData(fullMockData as any);
+          console.warn("Using fallback SCHEDULE_RAW_DATA / fullMockData:", e);
+          transformed = transformFullData((SCHEDULE_RAW_DATA || fullMockData) as any);
         }
 
         // Build Graph to evaluate Blocking Weights (Tranca X Matérias)
