@@ -455,15 +455,20 @@ export default function GradeView({ matricula, onLogout, onOpenTutorial, onStart
         let STRICTLY_AVAILABLE_COURSES = transformed.courses.filter(course => {
            const norm = normalize(course.name);
            if (vencidosNomes.includes(norm)) return false;
-           return availableCourseNames.includes(norm);
+           return availableCourseNames.length === 0 || availableCourseNames.includes(norm);
         });
 
-        // Fallback: If strict matching resulted in 0 courses, display all non-vencido courses
+        // Fallback 1: If strict matching resulted in 0 courses, display all non-vencido courses
         if (STRICTLY_AVAILABLE_COURSES.length === 0) {
            STRICTLY_AVAILABLE_COURSES = transformed.courses.filter(course => {
               const norm = normalize(course.name);
               return !vencidosNomes.includes(norm);
            });
+        }
+
+        // Fallback 2: Guarantees that available subject options are displayed
+        if (STRICTLY_AVAILABLE_COURSES.length === 0) {
+           STRICTLY_AVAILABLE_COURSES = transformed.courses;
         }
 
         STRICTLY_AVAILABLE_COURSES = STRICTLY_AVAILABLE_COURSES.map(course => {

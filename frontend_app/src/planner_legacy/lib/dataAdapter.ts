@@ -19,7 +19,7 @@ export function transformRawCourse(raw: RawCourseJSON, allRaw: RawCourseJSON[], 
     });
 
     // Detect if name is a class code (e.g., "101020", "101021-A", "272549") and code is the subject name (e.g., "ACIONAMENTOS ELETRICOS")
-    const isNameClassCode = /^[\d\-\.\sA-Z0-9]{1,8}$/.test(raw.name.trim()) && /[a-zA-Z]{3,}/.test(raw.code);
+    const isNameClassCode = /^[\d\-\.\sA-Z0-9]{1,10}$/i.test(raw.name.trim()) && raw.code.trim().length >= 3 && /[^\d]/.test(raw.code);
     const subjectName = isNameClassCode ? raw.code : raw.name;
     const classCode = isNameClassCode ? raw.name : raw.code;
 
