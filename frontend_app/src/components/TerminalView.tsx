@@ -8,11 +8,43 @@ import { API_BASE_URL } from '../lib/apiConfig';
 
 export default function TerminalView({ matricula, onFinish }: { matricula: string, onFinish: () => void }) {
   const [logs, setLogs] = useState<string[]>([]);
-  const [status, setStatus] = useState<"running" | "success" | "error">("running");
+  const [status, setStatus] = useState<"running" | "success" | "error" | "need_password">("running");
   const [progress, setProgress] = useState(15);
+  const [inputSenha, setInputSenha] = useState("");
+  const [isStarting, setIsStarting] = useState(false);
+
+  // Trigger sync process on mount
+  const startSync = async (pwd: string) => {
+    setIsStarting(true);
+    setStatus("running");
+    try {
+      const matriculaUpper = matricula.trim().toUpperCase();
+      localStorage.setItem(`user_senha_${matriculaUpper}`, pwd);
+      await axios.post(`${API_BASE_URL}/api/sync_bg`, {
+        matricula: matriculaUpper,
+        senha: pwd
+      });
+    } catch (err) {
+      console.error("Erro ao disparar sync_bg:", err);
+    } finally {
+      setIsStarting(false);
+    }
+  };
+
+  useEffect(() => {
+    const matriculaUpper = matricula.trim().toUpperCase();
+    const savedSenha = localStorage.getItem(`user_senha_${matriculaUpper}`);
+
+    if (savedSenha) {
+      startSync(savedSenha);
+    } else {
+      setStatus("need_password");
+    }
+  }, [matricula]);
 
   // Poll status & stream logs to detect completion
   useEffect(() => {
+    if (status === "need_password") return;
     let statusInterval: ReturnType<typeof setInterval>;
     let isFinished = false;
 
@@ -67,7 +99,7 @@ export default function TerminalView({ matricula, onFinish }: { matricula: strin
     checkStatus();
 
     return () => clearInterval(statusInterval);
-  }, [onFinish]);
+  }, [status, onFinish]);
 
   const latestLog = logs[logs.length - 1] || "Estabelecendo conexão com o sistema acadêmico...";
 
@@ -99,26 +131,66 @@ export default function TerminalView({ matricula, onFinish }: { matricula: strin
 
         {/* Text Zone */}
         <h2 className="text-xl font-display font-black tracking-tight text-slate-800 mb-2">
-           {status === "running" ? "Sincronizando Dados" : status === "success" ? "Concluído!" : "Falha na Sincronização"}
+           {status === "need_password" ? "Senha do CEFET" : status === "running" ? "Sincronizando Dados" : status === "success" ? "Concluído!" : "Falha na Sincronização"}
         </h2>
         
-        <p className="text-sm text-slate-500 min-h-[40px] font-medium leading-relaxed">
-           {status === "success" ? "Seu currículo foi importado com sucesso." : latestLog}
-        </p>
+        {status !== "need_password" && (
+          <p className="text-sm text-slate-500 min-h-[40px] font-medium leading-relaxed">
+             {status === "success" ? "Seu currículo foi importado com sucesso." : latestLog}
+          </p>
+        )}
+
+        {status === "need_password" && (
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (inputSenha) startSync(inputSenha);
+            }}
+            className="w-full mt-2 space-y-3"
+          >
+            <p className="text-xs text-slate-500 font-medium">Digite a sua senha do Portal CEFET para importar seus dados atualizados:</p>
+            <input
+              type="password"
+              placeholder="Senha do Portal CEFET"
+              value={inputSenha}
+              onChange={(e) => setInputSenha(e.target.value)}
+              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary text-slate-800"
+              autoFocus
+            />
+            <div className="flex gap-2 pt-2">
+              <button
+                type="button"
+                onClick={onFinish}
+                className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-2.5 rounded-xl text-xs transition-colors"
+              >
+                Voltar
+              </button>
+              <button
+                type="submit"
+                disabled={!inputSenha || isStarting}
+                className="flex-1 bg-primary hover:bg-primary/90 text-white font-bold py-2.5 rounded-xl text-xs transition-colors disabled:opacity-50"
+              >
+                {isStarting ? "Iniciando..." : "Sincronizar"}
+              </button>
+            </div>
+          </form>
+        )}
 
         {/* Minimal Progress Bar */}
-        <div className="w-full mt-8 flex flex-col gap-2">
-           <div className="flex justify-between items-center px-1">
-              <span className="text-[10px] font-bold text-slate-400 tracking-wider uppercase">Progresso</span>
-              <span className="text-[10px] font-bold text-primary">{Math.round(progress)}%</span>
-           </div>
-           <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
-               <div 
-                 className={cn("h-full transition-all duration-700 ease-out", status === "error" ? "bg-red-500" : status === "success" ? "bg-emerald-500" : "bg-primary")} 
-                 style={{ width: `${progress}%` }} 
-               />
-           </div>
-        </div>
+        {status !== "need_password" && (
+          <div className="w-full mt-8 flex flex-col gap-2">
+             <div className="flex justify-between items-center px-1">
+                <span className="text-[10px] font-bold text-slate-400 tracking-wider uppercase">Progresso</span>
+                <span className="text-[10px] font-bold text-primary">{Math.round(progress)}%</span>
+             </div>
+             <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                 <div 
+                   className={cn("h-full transition-all duration-700 ease-out", status === "error" ? "bg-red-500" : status === "success" ? "bg-emerald-500" : "bg-primary")} 
+                   style={{ width: `${progress}%` }} 
+                 />
+             </div>
+          </div>
+        )}
 
         {/* ROTATING TIPS FOR THE USER */}
         {status === "running" && <LoadingTips />}
