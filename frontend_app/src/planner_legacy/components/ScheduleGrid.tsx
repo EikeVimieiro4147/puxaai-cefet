@@ -46,6 +46,7 @@ interface ScheduleGridProps {
   courses: Course[];
   hourRange: [number, number];
   guestPlannedIds?: Set<string>;
+  showGuestSchedule?: boolean;
   onGuestCourseClick?: (id: string) => void;
 }
 
@@ -61,6 +62,7 @@ export function ScheduleGrid({
   courses,
   hourRange,
   guestPlannedIds,
+  showGuestSchedule = true,
   onGuestCourseClick,
 }: ScheduleGridProps) {
   const [dragging, setDragging] = useState(false);
@@ -182,7 +184,18 @@ export function ScheduleGrid({
                 ? courses.find(c => c.id === hoveredId)
                 : null;
               
-              const guestCourses = guestPlannedIds ? courses.filter(c => guestPlannedIds.has(c.id) && !selectedCourses.some(sc => sc.id === c.id)) : [];
+              const isGuestVisible = showGuestSchedule ?? true;
+              const guestCourses = (guestPlannedIds && isGuestVisible)
+                ? courses.filter(c => {
+                    if (selectedCourses.some(sc => sc.id === c.id)) return false;
+                    const cNorm = c.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+                    const codeNorm = c.code.toLowerCase().replace(/[^a-z0-9]/g, '');
+                    return Array.from(guestPlannedIds).some(gId => {
+                      const gNorm = gId.toLowerCase().replace(/[^a-z0-9]/g, '');
+                      return gId === c.id || gNorm === codeNorm || gNorm === cNorm;
+                    });
+                  })
+                : [];
 
               let coursesToRender = [...selectedCourses, ...guestCourses];
               if (previewCourse && !coursesToRender.some(c => c.id === previewCourse.id)) {
@@ -205,7 +218,7 @@ export function ScheduleGrid({
                     const status = getCourseStatus(event.course);
                     const isPlanned = status === 'planned';
                     const isHoverPreview = event.course.id === hoveredId && !selectedCourses.some(c => c.id === event.course.id);
-                    const isGuestPreview = guestPlannedIds?.has(event.course.id) && !selectedCourses.some(c => c.id === event.course.id);
+                    const isGuestPreview = isGuestVisible && guestCourses.some(gc => gc.id === event.course.id);
                     const isFull = event.course.occupancy.occupied >= event.course.occupancy.total;
                     const hasConflictReal = !isHoverPreview && !isGuestPreview && selectedCourses.some(sc => sc.id !== event.course.id && slotsOverlap(sc, event.course));
 

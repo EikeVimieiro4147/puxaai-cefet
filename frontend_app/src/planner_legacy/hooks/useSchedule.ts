@@ -63,6 +63,8 @@ export function useSchedule(matricula?: string, initialData?: { courses?: Course
   const [completedCodes, setCompletedCodes] = useState<string[]>([]);
   const [guestMatricula, setGuestMatricula] = useState<string | null>(null);
   const [guestPlannedIds, setGuestPlannedIds] = useState<Set<string>>(new Set());
+  const [showConfirmed, setShowConfirmed] = useState<boolean>(true);
+  const [showGuestSchedule, setShowGuestSchedule] = useState<boolean>(true);
 
   const [plannedIds, setPlannedIds] = useState<Set<string>>(() => {
     try {
@@ -87,10 +89,10 @@ export function useSchedule(matricula?: string, initialData?: { courses?: Course
       return () => clearTimeout(timeout);
     }
   }, [plannedIds, matricula]);
+
   const [dragSelection, setDragSelection] = useState<DragSelection | null>(null);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [filters, setFilters] = useState<Filters>(() => ({
-
     searchText: '',
     professors: [],
     degrees: [],
@@ -100,10 +102,6 @@ export function useSchedule(matricula?: string, initialData?: { courses?: Course
     hideConflicts: false,
     hideFull: false,
   }));
-
-
-
-
 
   const confirmedSet = useMemo(() => new Set(confirmedIds), [confirmedIds]);
 
@@ -115,7 +113,6 @@ export function useSchedule(matricula?: string, initialData?: { courses?: Course
     return [...new Set(baseCourses.map(c => c.professor))].filter(Boolean).sort();
   }, [courses, filters.degrees]);
 
-
   const allDegrees = useMemo(() =>
     [...new Set(courses.map(c => c.degree))].filter((d): d is string => !!d).sort(),
     [courses]);
@@ -124,13 +121,12 @@ export function useSchedule(matricula?: string, initialData?: { courses?: Course
     [...new Set(courses.map(c => c.period))].sort((a, b) => a - b),
     [courses]);
 
-
   const selectedCourses = useMemo(() => {
-    return courses.filter(c => confirmedSet.has(c.id) || plannedIds.has(c.id));
-  }, [courses, confirmedSet, plannedIds]);
+    return courses.filter(c => (showConfirmed ? confirmedSet.has(c.id) : false) || plannedIds.has(c.id));
+  }, [courses, confirmedSet, plannedIds, showConfirmed]);
 
   const getCourseStatus = useCallback((course: Course): CourseStatus => {
-    if (confirmedSet.has(course.id)) return 'confirmed';
+    if (showConfirmed && confirmedSet.has(course.id)) return 'confirmed';
     if (plannedIds.has(course.id)) return 'planned';
     if (!course.prerequisitesMet) return 'blocked';
 
@@ -139,14 +135,14 @@ export function useSchedule(matricula?: string, initialData?: { courses?: Course
     );
     if (hasConflict) return 'conflict';
     return 'available';
-  }, [confirmedSet, plannedIds, selectedCourses]);
+  }, [confirmedSet, plannedIds, selectedCourses, showConfirmed]);
 
   const filteredCourses = useMemo(() => {
     return courses.filter(course => {
       // 1. Grid duplication check
-      if (confirmedSet.size > 0 && confirmedSet.has(course.id)) return false;
+      if (showConfirmed && confirmedSet.size > 0 && confirmedSet.has(course.id)) return false;
 
-      // 2. Logic-based filters (independent of displayed status)
+      // 2. Logic-based filters
       const hasMissingPrerequisites = !course.prerequisitesMet;
       const hasConflict = selectedCourses.some(sc => sc.id !== course.id && slotsOverlap(sc, course));
       const isFull = course.occupancy.occupied >= course.occupancy.total;
@@ -171,8 +167,6 @@ export function useSchedule(matricula?: string, initialData?: { courses?: Course
       if ((filters.degrees?.length || 0) > 0 && (!course.degree || !filters.degrees.includes(course.degree))) return false;
       if ((filters.periods?.length || 0) > 0 && !filters.periods.includes(course.period)) return false;
 
-
-
       const inRange = course.slots.every(
         s => s.startHour >= filters.hourRange[0] && s.endHour <= filters.hourRange[1]
       );
@@ -182,7 +176,7 @@ export function useSchedule(matricula?: string, initialData?: { courses?: Course
 
       return true;
     }).sort((a, b) => b.blockingWeight - a.blockingWeight || a.period - b.period || a.name.localeCompare(b.name));
-  }, [courses, filters, getCourseStatus, confirmedSet, dragSelection]);
+  }, [courses, filters, getCourseStatus, confirmedSet, dragSelection, showConfirmed, selectedCourses]);
 
   const togglePlanned = useCallback((courseId: string) => {
     setPlannedIds(prev => {
@@ -207,8 +201,6 @@ export function useSchedule(matricula?: string, initialData?: { courses?: Course
     const allP = [...new Set(newData.courses.map(c => c.period))].sort((a, b) => a - b);
     setFilters(f => ({ ...f, periods: allP }));
   }, []);
-
-
 
   return {
     courses,
@@ -237,6 +229,12 @@ export function useSchedule(matricula?: string, initialData?: { courses?: Course
     setGuestMatricula,
     guestPlannedIds,
     setGuestPlannedIds,
+    showConfirmed,
+    setShowConfirmed,
+    toggleShowConfirmed: () => setShowConfirmed(prev => !prev),
+    showGuestSchedule,
+    setShowGuestSchedule,
+    toggleShowGuestSchedule: () => setShowGuestSchedule(prev => !prev),
   };
 }
 

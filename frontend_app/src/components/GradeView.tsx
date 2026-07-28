@@ -294,7 +294,13 @@ export default function GradeView({ matricula, onLogout, onOpenTutorial }: Grade
     setGuestMatricula,
     guestPlannedIds,
     setGuestPlannedIds,
+    showConfirmed,
+    toggleShowConfirmed,
+    showGuestSchedule,
+    toggleShowGuestSchedule,
   } = useSchedule(matricula, { courses: [], confirmedIds: [], plannedIds: [] });
+
+  const [socialSearchResults, setSocialSearchResults] = useState<any[]>([]);
 
   useEffect(() => {
     const loadData = async () => {
@@ -735,6 +741,17 @@ export default function GradeView({ matricula, onLogout, onOpenTutorial }: Grade
             Sem Conflitos
           </button>
 
+          <button
+            onClick={toggleShowConfirmed}
+            className={`px-3 py-2 text-xs md:text-sm font-bold transition-all rounded-xl border shrink-0 flex items-center gap-1.5 ${
+              !showConfirmed ? 'bg-amber-600 text-white border-amber-600 shadow-sm' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+            }`}
+            title={showConfirmed ? "Clique para ocultar as matérias inscritas e testar novos horários sem travamentos" : "Clique para exibir novamente as matérias inscritas na sua grade"}
+          >
+            {!showConfirmed ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+            {showConfirmed ? "Ocultar Fixas" : "Exibir Fixas"}
+          </button>
+
           {/* DESKTOP TUTORIAL & LOGOUT (Hidden on mobile to avoid duplicate/cut-off icons!) */}
           <button onClick={onOpenTutorial} className="hidden md:flex p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors rounded-lg" title="Dúvidas e Tutorial">
             <HelpCircle className="w-5 h-5" />
@@ -930,40 +947,63 @@ export default function GradeView({ matricula, onLogout, onOpenTutorial }: Grade
                        <div className="relative">
                           <input 
                              type="text" 
-                             placeholder="Buscar nome do colega..."
+                             placeholder="Buscar colega por Nome ou Matrícula..."
+                             value={socialSearchQuery}
                              className="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-xs bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/50 text-slate-700 font-medium"
                              onChange={async (e) => {
                                  const q = e.target.value;
                                  setSocialSearchQuery(q);
-                                 if (q.length < 3) {
-                                    setGuestMatricula(null);
-                                    setGuestPlannedIds(new Set());
+                                 if (q.length < 2) {
+                                    setSocialSearchResults([]);
                                     setNoResultsForColleague(false);
                                     return;
                                  }
                                  try {
                                     const res = await axios.get(`${API_BASE_URL}/api/social/search?q=${q}`);
                                     if (res.data.status === 'success' && res.data.results.length > 0) {
-                                       const guest = res.data.results[0];
-                                       setGuestMatricula(guest.matricula);
-                                       setGuestPlannedIds(new Set(guest.plannedIds));
+                                       setSocialSearchResults(res.data.results);
                                        setNoResultsForColleague(false);
                                     } else {
-                                       setGuestMatricula(null);
-                                       setGuestPlannedIds(new Set());
+                                       setSocialSearchResults([]);
                                        setNoResultsForColleague(true);
                                     }
                                  } catch(err) {
+                                    setSocialSearchResults([]);
                                     setNoResultsForColleague(true);
                                  }
                               }}
                           />
                        </div>
 
-                       {noResultsForColleague && socialSearchQuery.length >= 3 && (
+                       {socialSearchResults.length > 0 && (
+                          <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Colegas Encontrados:</p>
+                             {socialSearchResults.map((colleague: any) => (
+                                <div key={colleague.matricula} className="p-3 bg-white border border-slate-200 rounded-xl flex items-center justify-between shadow-2xs hover:border-indigo-300 transition-all">
+                                   <div className="min-w-0 flex-1 pr-2">
+                                      <p className="text-xs font-bold text-slate-800 truncate">{colleague.nome || colleague.matricula}</p>
+                                      <p className="text-[10px] text-slate-500">{colleague.matricula} &bull; {colleague.plannedIds?.length || 0} turmas</p>
+                                   </div>
+                                   <button
+                                      onClick={() => {
+                                         const displayName = colleague.nome ? `${colleague.nome} (${colleague.matricula})` : colleague.matricula;
+                                         setGuestMatricula(displayName);
+                                         setGuestPlannedIds(new Set(colleague.plannedIds || []));
+                                         toast({ title: "Grade Espelhada!", description: `Sincronizado com a grade de ${colleague.nome || colleague.matricula}` });
+                                      }}
+                                      className="px-2.5 py-1.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white rounded-lg text-[10px] font-bold transition-all shrink-0"
+                                   >
+                                      Espelhar
+                                   </button>
+                                </div>
+                             ))}
+                          </div>
+                       )}
+
+                       {noResultsForColleague && socialSearchQuery.length >= 2 && socialSearchResults.length === 0 && (
                           <div className="p-4 bg-amber-50/70 border border-amber-100 rounded-xl flex flex-col gap-3">
                              <p className="text-xs font-semibold text-amber-800 leading-relaxed">
-                                Nenhum colega com o nome "{socialSearchQuery}" foi encontrado ou a grade dele está privada.
+                                Nenhum colega com "{socialSearchQuery}" foi encontrado ou a grade dele está privada.
                              </p>
                              <button
                                 onClick={() => {
@@ -982,7 +1022,7 @@ export default function GradeView({ matricula, onLogout, onOpenTutorial }: Grade
                        )}
 
                        {guestMatricula && (
-                          <div className="p-4 bg-indigo-50 border border-indigo-100 rounded-xl flex flex-col gap-2">
+                          <div className="p-4 bg-indigo-50 border border-indigo-100 rounded-xl flex flex-col gap-2.5">
                              <div className="flex items-center justify-between">
                                 <p className="text-xs font-bold text-indigo-700">Espelhando grade de:</p>
                                 <button
@@ -996,11 +1036,19 @@ export default function GradeView({ matricula, onLogout, onOpenTutorial }: Grade
                                 </button>
                              </div>
                              <p className="text-sm font-bold text-slate-800 truncate">{guestMatricula}</p>
-                             <p className="text-xs text-indigo-500">{guestPlannedIds.size} turmas planejadas juntas.</p>
-                             <div className="flex gap-2 items-center mt-2 pt-2 border-t border-indigo-200">
-                                <span className="w-2 h-2 rounded-full border border-indigo-400 bg-indigo-400/20 shadow-[0_0_8px_rgba(99,102,241,0.5)]"></span>
-                                <span className="text-[10px] text-indigo-600 font-bold uppercase">Projeção ligada</span>
-                             </div>
+                             <p className="text-xs text-indigo-500">{guestPlannedIds.size} turmas projetadas juntas.</p>
+                             
+                             <button
+                                onClick={toggleShowGuestSchedule}
+                                className={`w-full mt-1 py-2 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-2xs ${
+                                   showGuestSchedule
+                                      ? 'bg-indigo-600 text-white hover:bg-indigo-700'
+                                      : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
+                                }`}
+                             >
+                                {showGuestSchedule ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                                {showGuestSchedule ? "Ocultar Grade do Amigo" : "Exibir Grade do Amigo"}
+                             </button>
                           </div>
                        )}
                     </div>
@@ -1038,6 +1086,7 @@ export default function GradeView({ matricula, onLogout, onOpenTutorial }: Grade
               hoveredId={hoveredId}
               hourRange={filters.hourRange}
               guestPlannedIds={guestPlannedIds}
+              showGuestSchedule={showGuestSchedule}
               onGuestCourseClick={(id) => togglePlanned(id)}
             />
           </ErrorBoundary>
