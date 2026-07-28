@@ -60,7 +60,11 @@ export interface TransformedData {
 }
 
 export function transformFullData(data: RawScheduleJSON): TransformedData {
-    const { courses: rawCourses, user } = data;
+    if (!data) {
+        return { courses: [], confirmedIds: [], plannedIds: [], completedCodes: [] };
+    }
+    const rawCourses = data.courses || [];
+    const user = data.user || {} as any;
     const completedCodes = user.completed_courses_codes || [];
 
     const courses = rawCourses.map(raw => transformRawCourse(raw, rawCourses, completedCodes));
