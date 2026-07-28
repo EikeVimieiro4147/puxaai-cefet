@@ -23,9 +23,10 @@ interface GradeProps {
   matricula: string;
   onLogout: () => void;
   onOpenTutorial: () => void;
+  onStartSync?: () => void;
 }
 
-export default function GradeView({ matricula, onLogout, onOpenTutorial }: GradeProps) {
+export default function GradeView({ matricula, onLogout, onOpenTutorial, onStartSync }: GradeProps) {
   const { toast } = useToast();
   const [isFetchingData, setIsFetchingData] = useState(true);
   const [error, setError] = useState('');
@@ -752,7 +753,16 @@ export default function GradeView({ matricula, onLogout, onOpenTutorial }: Grade
             {showConfirmed ? "Ocultar Fixas" : "Exibir Fixas"}
           </button>
 
-          {/* DESKTOP TUTORIAL & LOGOUT (Hidden on mobile to avoid duplicate/cut-off icons!) */}
+          {onStartSync && (
+            <button
+              onClick={onStartSync}
+              className="px-3 py-2 text-xs md:text-sm font-bold transition-all rounded-xl border shrink-0 flex items-center gap-1.5 bg-indigo-50 text-indigo-600 border-indigo-200 hover:bg-indigo-600 hover:text-white shadow-2xs"
+              title="Atualizar dados do CEFET e sincronizar histórico com o banco"
+            >
+              <RefreshCcw className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Sincronizar CEFET</span>
+            </button>
+          )}
           <button onClick={onOpenTutorial} className="hidden md:flex p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors rounded-lg" title="Dúvidas e Tutorial">
             <HelpCircle className="w-5 h-5" />
           </button>

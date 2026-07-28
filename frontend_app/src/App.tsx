@@ -7,15 +7,23 @@ import { ErrorBoundary } from "./components/ErrorBoundary";
 import { OnboardingTutorial } from "./components/OnboardingTutorial";
 
 function App() {
-  const [session, setSession] = useState<{ matricula: string, isScraping: boolean, isDashboardReady: boolean } | null>(null);
+  const [session, setSession] = useState<{ matricula: string, isScraping: boolean, isDashboardReady: boolean } | null>(() => {
+    const saved = localStorage.getItem("user_matricula");
+    if (saved) return { matricula: saved, isScraping: false, isDashboardReady: true };
+    return null;
+  });
 
   const handleLogin = (matricula: string) => {
-    // Ao realizar o submit válido, entra no modo de terminal de raspagem
-    setSession({ matricula, isScraping: true, isDashboardReady: false });
+    // Instant fast login
+    setSession({ matricula, isScraping: false, isDashboardReady: true });
+  };
+
+  const handleStartManualSync = () => {
+    if (!session) return;
+    setSession({ ...session, isScraping: true });
   };
 
   const handleScrapeFinish = () => {
-    // Quando o backend avisar que extraiu 100%, nós saímos do modo terminal
     setSession((prev) => prev ? { ...prev, isScraping: false, isDashboardReady: true } : null);
   };
   
@@ -46,14 +54,22 @@ function App() {
           {currentTab === 'fluxograma' ? (
             <DashboardView 
                matricula={session.matricula} 
-               onLogout={() => setSession(null)} 
+               onLogout={() => {
+                 localStorage.removeItem("user_matricula");
+                 setSession(null);
+               }} 
                onOpenTutorial={() => setShowTutorial(true)}
+               onStartSync={handleStartManualSync}
             />
           ) : (
             <GradeView
                matricula={session.matricula}
-               onLogout={() => setSession(null)}
+               onLogout={() => {
+                 localStorage.removeItem("user_matricula");
+                 setSession(null);
+               }}
                onOpenTutorial={() => setShowTutorial(true)}
+               onStartSync={handleStartManualSync}
             />
           )}
         </ErrorBoundary>

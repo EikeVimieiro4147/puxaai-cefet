@@ -10,10 +10,10 @@ export default function LoginPage({ onLogin }: { onLogin: (matricula: string) =>
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!matricula || !senha) {
-      setError("Preencha todos os campos.");
+    if (!matricula) {
+      setError("Preencha a sua matrícula.");
       return;
     }
     
@@ -21,16 +21,14 @@ export default function LoginPage({ onLogin }: { onLogin: (matricula: string) =>
     setError("");
 
     try {
-      const matriculaUpper = matricula.toUpperCase();
-      const res = await axios.post(`${API_BASE_URL}/api/sync_bg`, { matricula: matriculaUpper, senha });
-      if (res.data.status === "error") {
-        setError(res.data.message);
-      } else {
-        localStorage.setItem("user_matricula", matriculaUpper);
-        onLogin(matriculaUpper);
+      const matriculaUpper = matricula.trim().toUpperCase();
+      localStorage.setItem("user_matricula", matriculaUpper);
+      if (senha) {
+        localStorage.setItem(`user_senha_${matriculaUpper}`, senha);
       }
+      onLogin(matriculaUpper);
     } catch (err: any) {
-      setError(err.response?.data?.message || "Erro de conexão com o banco de dados local.");
+      setError("Erro ao realizar login local.");
     } finally {
       setLoading(false);
     }
@@ -49,7 +47,7 @@ export default function LoginPage({ onLogin }: { onLogin: (matricula: string) =>
         
         <h1 className="font-display font-bold text-2xl text-primary mb-2">PuxaAi</h1>
         <p className="text-xs text-slate-400 mb-8 font-medium">
-          Insira seus dados do portal para sincronizar
+          Acesse instantaneamente seu fluxograma e grade horária
         </p>
 
         {error && (
@@ -67,7 +65,7 @@ export default function LoginPage({ onLogin }: { onLogin: (matricula: string) =>
               <input 
                 type="text" 
                 className="w-full bg-slate-50 border border-slate-100 rounded-xl p-4 pl-12 text-sm outline-none focus:ring-2 focus:ring-primary text-slate-800"
-                placeholder="Ex: 161115"
+                placeholder="Ex: 2012391GEL ou 161115"
                 value={matricula}
                 onChange={(e) => setMatricula(e.target.value)}
               />
@@ -75,13 +73,13 @@ export default function LoginPage({ onLogin }: { onLogin: (matricula: string) =>
           </div>
           
           <div>
-            <label className="text-[10px] font-bold text-slate-400 uppercase ml-1">Senha do Portal</label>
+            <label className="text-[10px] font-bold text-slate-400 uppercase ml-1">Senha do Portal (Opcional)</label>
             <div className="relative">
               <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
               <input 
                 type="password" 
                 className="w-full bg-slate-50 border border-slate-100 rounded-xl p-4 pl-12 text-sm outline-none focus:ring-2 focus:ring-primary text-slate-800"
-                placeholder="••••••••"
+                placeholder="Salva para atualizações futuras"
                 value={senha}
                 onChange={(e) => setSenha(e.target.value)}
               />
@@ -100,7 +98,7 @@ export default function LoginPage({ onLogin }: { onLogin: (matricula: string) =>
             ) : (
               <>
                 <ArrowRight className="w-5 h-5" />
-                Iniciar Sincronização
+                Entrar no PuxaAi
               </>
             )}
           </button>

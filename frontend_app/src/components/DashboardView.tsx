@@ -25,9 +25,10 @@ interface DashboardProps {
   matricula: string;
   onLogout: () => void;
   onOpenTutorial: () => void;
+  onStartSync?: () => void;
 }
 
-export default function DashboardView({ matricula, onLogout, onOpenTutorial }: DashboardProps) {
+export default function DashboardView({ matricula, onLogout, onOpenTutorial, onStartSync }: DashboardProps) {
   const { toast } = useToast();
   const [completedIds, setCompletedIds] = useState<string[]>([]);
   const [userInfo, setUserInfo] = useState<any>(null);
@@ -478,6 +479,17 @@ export default function DashboardView({ matricula, onLogout, onOpenTutorial }: D
               className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-slate-700"
             />
           </div>
+
+          {onStartSync && (
+            <button
+              onClick={onStartSync}
+              className="px-3 py-2 text-xs md:text-sm font-bold transition-all rounded-xl border shrink-0 flex items-center gap-1.5 bg-indigo-50 text-indigo-600 border-indigo-200 hover:bg-indigo-600 hover:text-white shadow-2xs"
+              title="Atualizar dados do CEFET e sincronizar histórico com o banco"
+            >
+              <RefreshCcw className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Sincronizar CEFET</span>
+            </button>
+          )}
           <button
             onClick={() => setShowNextOnly(!showNextOnly)}
             className={`px-3 py-2 text-xs md:text-sm font-bold transition-colors rounded-xl border shrink-0 ${showNextOnly ? 'bg-primary text-white border-primary' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`}

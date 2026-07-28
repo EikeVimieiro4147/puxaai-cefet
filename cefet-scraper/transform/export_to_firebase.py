@@ -101,7 +101,7 @@ def export_horarios(db):
     
     for cod_disc, data in disciplinas_dict.items():
         doc_ref = db.collection("horarios").document(cod_disc)
-        batch.set(doc_ref, data)
+        batch.set(doc_ref, data, merge=True)
         count += 1
         total += 1
         
@@ -139,11 +139,9 @@ def export_curriculo(db):
         "curso": aluno_info.get("curso", ""),
         "periodo_atual": aluno_info.get("periodo_atual", 0),
         "carga_horaria": data.get("carga_horaria", {}),
-        "isPublic": True,
-        "plannedIds": []
     }
     
-    # Save the root user document
+    # Save/merge the root user document without wiping plannedIds or isPublic
     doc_ref.set(user_data, merge=True)
     
     # Save subcollections
@@ -164,7 +162,7 @@ def export_curriculo(db):
             "creditos": disc.get("creditos", 0),
             "situacao": disc.get("situacao", ""),
             "periodo": disc.get("periodo", 0)
-        })
+        }, merge=True)
         count += 1
         total += 1
         if count == 400:
