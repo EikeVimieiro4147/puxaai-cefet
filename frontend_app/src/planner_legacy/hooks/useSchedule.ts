@@ -79,16 +79,18 @@ export function useSchedule(matricula?: string, initialData?: { courses?: Course
       const arr = Array.from(plannedIds);
       localStorage.setItem(`cefet_planner_${matricula}_planned_v2`, JSON.stringify(arr));
       
+      const allActiveIds = Array.from(new Set([...plannedIds, ...confirmedIds]));
+
       const timeout = setTimeout(() => {
           axios.post(`${API_BASE_URL}/api/social/sync_schedule`, {
              matricula,
-             plannedIds: arr
+             plannedIds: allActiveIds
           }).catch(() => console.error("Falha ao sincronizar online"));
-      }, 1500); // Debounce de 1.5s pra não flodar Firebase
+      }, 1000); // Debounce de 1s pra sincronizar Firebase
       
       return () => clearTimeout(timeout);
     }
-  }, [plannedIds, matricula]);
+  }, [plannedIds, confirmedIds, matricula]);
 
   const [dragSelection, setDragSelection] = useState<DragSelection | null>(null);
   const [hoveredId, setHoveredId] = useState<string | null>(null);

@@ -185,19 +185,22 @@ export function ScheduleGrid({
                 : null;
               
               const isGuestVisible = showGuestSchedule ?? true;
-              const guestCourses = (guestPlannedIds && isGuestVisible)
-                ? courses.filter(c => {
-                    if (selectedCourses.some(sc => sc.id === c.id)) return false;
-                    const cNorm = c.name.toLowerCase().replace(/[^a-z0-9]/g, '');
-                    const codeNorm = c.code.toLowerCase().replace(/[^a-z0-9]/g, '');
-                    return Array.from(guestPlannedIds).some(gId => {
-                      const gNorm = gId.toLowerCase().replace(/[^a-z0-9]/g, '');
-                      return gId === c.id || gNorm === codeNorm || gNorm === cNorm;
-                    });
-                  })
-                : [];
+              const guestCourseIds = new Set<string>();
+              if (guestPlannedIds && isGuestVisible) {
+                courses.forEach(c => {
+                  const cNorm = c.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+                  const codeNorm = c.code.toLowerCase().replace(/[^a-z0-9]/g, '');
+                  const matches = Array.from(guestPlannedIds).some(gId => {
+                    const gNorm = gId.toLowerCase().replace(/[^a-z0-9]/g, '');
+                    return gId === c.id || gNorm === codeNorm || gNorm === cNorm;
+                  });
+                  if (matches) guestCourseIds.add(c.id);
+                });
+              }
 
-              let coursesToRender = [...selectedCourses, ...guestCourses];
+              const guestOnlyCourses = courses.filter(c => guestCourseIds.has(c.id) && !selectedCourses.some(sc => sc.id === c.id));
+
+              let coursesToRender = [...selectedCourses, ...guestOnlyCourses];
               if (previewCourse && !coursesToRender.some(c => c.id === previewCourse.id)) {
                  coursesToRender.push(previewCourse);
               }
@@ -218,7 +221,8 @@ export function ScheduleGrid({
                     const status = getCourseStatus(event.course);
                     const isPlanned = status === 'planned';
                     const isHoverPreview = event.course.id === hoveredId && !selectedCourses.some(c => c.id === event.course.id);
-                    const isGuestPreview = isGuestVisible && guestCourses.some(gc => gc.id === event.course.id);
+                    const isGuestPreview = isGuestVisible && guestOnlyCourses.some(gc => gc.id === event.course.id);
+                    const isSharedWithGuest = isGuestVisible && guestCourseIds.has(event.course.id) && selectedCourses.some(sc => sc.id === event.course.id);
                     const isFull = event.course.occupancy.occupied >= event.course.occupancy.total;
                     const hasConflictReal = !isHoverPreview && !isGuestPreview && selectedCourses.some(sc => sc.id !== event.course.id && slotsOverlap(sc, event.course));
 
@@ -255,6 +259,11 @@ export function ScheduleGrid({
                                 <div className="flex items-center gap-1 flex-wrap">
                                   <p className="text-[11px] font-extrabold leading-tight flex items-center gap-1 truncate">
                                     {event.course.name}
+                                    {isSharedWithGuest && (
+                                      <span className="inline-flex items-center gap-0.5 text-[8.5px] font-black bg-indigo-600 text-white px-1 py-0.2 rounded shrink-0 shadow-xs" title="Você e seu amigo(a) escolheram essa mesma turma!">
+                                        <Users2 className="w-2.5 h-2.5" /> Em comum
+                                      </span>
+                                    )}
                                   </p>
                                   {!event.course.prerequisitesMet && !isGuestPreview && (
                                     <Lock className="grid-icon" />
