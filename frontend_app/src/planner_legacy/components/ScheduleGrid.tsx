@@ -44,6 +44,7 @@ interface ScheduleGridProps {
   onDragSelect: (sel: DragSelection | null) => void;
   hoveredId: string | null;
   courses: Course[];
+  allCourses?: Course[];
   hourRange: [number, number];
   guestPlannedIds?: Set<string>;
   showGuestSchedule?: boolean;
@@ -60,6 +61,7 @@ export function ScheduleGrid({
   onDragSelect,
   hoveredId,
   courses,
+  allCourses,
   hourRange,
   guestPlannedIds,
   showGuestSchedule = true,
@@ -185,20 +187,23 @@ export function ScheduleGrid({
                 : null;
               
               const isGuestVisible = showGuestSchedule ?? true;
-              const guestCourseIds = new Set<string>();
+              const poolForGuest = (allCourses && allCourses.length > 0) ? allCourses : courses;
+              const guestCourseMap = new Map<string, Course>();
+
               if (guestPlannedIds && isGuestVisible) {
-                courses.forEach(c => {
+                poolForGuest.forEach(c => {
                   const cNorm = c.name.toLowerCase().replace(/[^a-z0-9]/g, '');
                   const codeNorm = c.code.toLowerCase().replace(/[^a-z0-9]/g, '');
                   const matches = Array.from(guestPlannedIds).some(gId => {
                     const gNorm = gId.toLowerCase().replace(/[^a-z0-9]/g, '');
                     return gId === c.id || gNorm === codeNorm || gNorm === cNorm;
                   });
-                  if (matches) guestCourseIds.add(c.id);
+                  if (matches) guestCourseMap.set(c.id, c);
                 });
               }
 
-              const guestOnlyCourses = courses.filter(c => guestCourseIds.has(c.id) && !selectedCourses.some(sc => sc.id === c.id));
+              const guestOnlyCourses = Array.from(guestCourseMap.values()).filter(c => !selectedCourses.some(sc => sc.id === c.id));
+              const guestCourseIds = new Set(guestCourseMap.keys());
 
               let coursesToRender = [...selectedCourses, ...guestOnlyCourses];
               if (previewCourse && !coursesToRender.some(c => c.id === previewCourse.id)) {
@@ -223,23 +228,33 @@ export function ScheduleGrid({
                     const isHoverPreview = event.course.id === hoveredId && !selectedCourses.some(c => c.id === event.course.id);
                     const isGuestPreview = isGuestVisible && guestOnlyCourses.some(gc => gc.id === event.course.id);
                     const isSharedWithGuest = isGuestVisible && guestCourseIds.has(event.course.id) && selectedCourses.some(sc => sc.id === event.course.id);
+                    const isCompletedByMe = completedCodes.includes(event.course.code) || completedCodes.some(cc => cc.toLowerCase().replace(/[^a-z0-9]/g, '') === event.course.code.toLowerCase().replace(/[^a-z0-9]/g, ''));
+                    const isBlockedForMe = !event.course.prerequisitesMet;
                     const isFull = event.course.occupancy.occupied >= event.course.occupancy.total;
                     const hasConflictReal = !isHoverPreview && !isGuestPreview && selectedCourses.some(sc => sc.id !== event.course.id && slotsOverlap(sc, event.course));
+
+                    let blockStyle = getPlannedColor(event.course.code);
+                    if (isHoverPreview) {
+                      blockStyle = 'bg-white border-2 border-dashed border-slate-400 text-slate-700 shadow-xl opacity-95 z-[60]';
+                    } else if (isGuestPreview) {
+                      if (isCompletedByMe) {
+                        blockStyle = 'bg-emerald-50/80 border-2 border-dashed border-emerald-400 text-emerald-900 opacity-75 z-[45] shadow-xs';
+                      } else if (isBlockedForMe) {
+                        blockStyle = 'bg-amber-50/80 border-2 border-dashed border-amber-400 text-amber-900 opacity-75 z-[45] shadow-xs';
+                      } else {
+                        blockStyle = 'bg-indigo-50 border-2 border-dashed border-indigo-400 text-indigo-700 opacity-90 hover:opacity-100 z-[50] shadow-[0_0_15px_rgba(99,102,241,0.3)] backdrop-blur-sm';
+                      }
+                    } else if (status === 'confirmed') {
+                      blockStyle = 'schedule-block-confirmed';
+                    } else if (isFull || hasConflictReal) {
+                      blockStyle = 'schedule-block-conflict';
+                    }
 
                     return (
                       <Tooltip key={`${event.course.id}-${event.slot.day}-${event.slot.startHour}`}>
                         <TooltipTrigger asChild>
                           <div
-                            className={`absolute pointer-events-auto rounded-md p-2 flex flex-col justify-between overflow-hidden cursor-pointer transition-all hover:shadow-md ${isHoverPreview
-                              ? 'bg-white border-2 border-dashed border-slate-400 text-slate-700 shadow-xl opacity-95 z-[60]'
-                              : isGuestPreview
-                                ? 'bg-indigo-50 border-2 border-dashed border-indigo-400 text-indigo-700 opacity-90 hover:opacity-100 z-[50] shadow-[0_0_15px_rgba(99,102,241,0.3)] backdrop-blur-sm'
-                              : status === 'confirmed'
-                                ? 'schedule-block-confirmed'
-                                : (isFull || hasConflictReal)
-                                  ? 'schedule-block-conflict'
-                                  : getPlannedColor(event.course.code)
-                              }`}
+                            className={`absolute pointer-events-auto rounded-md p-2 flex flex-col justify-between overflow-hidden cursor-pointer transition-all hover:shadow-md ${blockStyle}`}
                             style={{
                               top: `calc(${topPct}% + 1px)`,
                               height: `calc(${heightPct}% - 2px)`,
@@ -262,6 +277,16 @@ export function ScheduleGrid({
                                     {isSharedWithGuest && (
                                       <span className="inline-flex items-center gap-0.5 text-[8.5px] font-black bg-indigo-600 text-white px-1 py-0.2 rounded shrink-0 shadow-xs" title="Você e seu amigo(a) escolheram essa mesma turma!">
                                         <Users2 className="w-2.5 h-2.5" /> Em comum
+                                      </span>
+                                    )}
+                                    {isGuestPreview && isCompletedByMe && (
+                                      <span className="inline-flex items-center gap-0.5 text-[8.5px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 px-1 py-0.2 rounded shrink-0" title="Você já cursou/venceu essa disciplina">
+                                        ✓ Você já cursou
+                                      </span>
+                                    )}
+                                    {isGuestPreview && !isCompletedByMe && isBlockedForMe && (
+                                      <span className="inline-flex items-center gap-0.5 text-[8.5px] font-bold bg-amber-100 text-amber-800 border border-amber-300 px-1 py-0.2 rounded shrink-0" title="Você ainda não cumpriu os pré-requisitos para esta matéria">
+                                        🔒 Requisito pendente
                                       </span>
                                     )}
                                   </p>

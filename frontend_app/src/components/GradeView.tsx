@@ -1109,6 +1109,7 @@ export default function GradeView({ matricula, onLogout, onOpenTutorial, onStart
           <ErrorBoundary name="ScheduleGrid">
             <ScheduleGrid
               courses={courses}
+              allCourses={SCHEDULE_RAW_DATA ? transformFullData(SCHEDULE_RAW_DATA as any).courses : courses}
               selectedCourses={selectedCourses}
               getCourseStatus={getCourseStatus}
               onRemovePlanned={togglePlanned} 
