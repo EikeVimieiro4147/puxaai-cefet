@@ -11,48 +11,63 @@ export default function TerminalView({ matricula, onFinish }: { matricula: strin
   const [status, setStatus] = useState<"running" | "success" | "error">("running");
   const [progress, setProgress] = useState(15);
 
-  // Pool de status para saber quando terminou
+  // Poll status & stream logs to detect completion
   useEffect(() => {
-    const statusInterval = setInterval(async () => {
+    let statusInterval: ReturnType<typeof setInterval>;
+    let isFinished = false;
+
+    const checkStatus = async () => {
+      if (isFinished) return;
       try {
-        const res = await axios.get(`${API_BASE_URL}/api/sync_status`);
-        if (res.data.status === "success") {
-          setStatus("success");
+        const [statusRes, logsRes] = await Promise.allSettled([
+          axios.get(`${API_BASE_URL}/api/sync_status`),
+          axios.get(`${API_BASE_URL}/api/stream_logs`)
+        ]);
+
+        let isDone = false;
+        let isErr = false;
+
+        if (statusRes.status === 'fulfilled') {
+          if (statusRes.value.data.status === 'success') isDone = true;
+          if (statusRes.value.data.status === 'error') isErr = true;
+        }
+
+        if (logsRes.status === 'fulfilled') {
+          const currentLogs: string[] = logsRes.value.data.logs || [];
+          setLogs(currentLogs);
+          
+          // Check if log contains success marker
+          if (currentLogs.some(l => l.includes('CONCLUIDO COM SUCESSO') || l.includes('CONCLUIDO') || l.includes('Concluído'))) {
+            isDone = true;
+          }
+          if (currentLogs.some(l => l.includes('ERRO NA RASPAGEM') || l.includes('FALHA GERAL'))) {
+            isErr = true;
+          }
+        }
+
+        if (isDone) {
+          isFinished = true;
+          setStatus('success');
           setProgress(100);
           clearInterval(statusInterval);
-          setTimeout(onFinish, 1500); 
-        } else if (res.data.status === "error") {
-          setStatus("error");
+          setTimeout(onFinish, 1200);
+        } else if (isErr) {
+          isFinished = true;
+          setStatus('error');
           clearInterval(statusInterval);
+        } else {
+          setProgress(prev => Math.min(prev + Math.random() * 8, 90));
         }
       } catch (err) {
-        console.error("Erro ao ler status:", err);
-      }
-    }, 1500);
-    return () => clearInterval(statusInterval);
-  }, [onFinish]);
-
-  // Pool de logs para ler stdout da engine python
-  useEffect(() => {
-    let timeout: ReturnType<typeof setTimeout>;
-    const fetchLogs = async () => {
-      try {
-        const res = await axios.get(`${API_BASE_URL}/api/stream_logs`);
-        setLogs(res.data.logs || []);
-        
-        if (status === "running") {
-           // Simulate progress increments based on log count
-           setProgress(prev => Math.min(prev + Math.random() * 8, 90));
-           timeout = setTimeout(fetchLogs, 800);
-        }
-      } catch (err) {
-        console.error("Erro ao ler stream:", err);
+        console.error("Erro ao sincronizar status:", err);
       }
     };
-    fetchLogs();
-    
-    return () => clearTimeout(timeout);
-  }, [status]);
+
+    statusInterval = setInterval(checkStatus, 1000);
+    checkStatus();
+
+    return () => clearInterval(statusInterval);
+  }, [onFinish]);
 
   const latestLog = logs[logs.length - 1] || "Estabelecendo conexão com o sistema acadêmico...";
 
