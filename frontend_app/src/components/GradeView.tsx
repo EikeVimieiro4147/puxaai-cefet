@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
-import { RefreshCcw, LogOut, ChevronRight, ChevronLeft, User, Eye, EyeOff, Search, HelpCircle, SlidersHorizontal, BookOpen, X, BarChart2, ChevronUp, Users2, Download, FileSpreadsheet, FileText, Image } from 'lucide-react';
+import { RefreshCcw, LogOut, ChevronRight, ChevronLeft, User, Eye, EyeOff, Search, HelpCircle, SlidersHorizontal, BookOpen, X, BarChart2, ChevronUp, Users2, Download, FileSpreadsheet, FileText, Image, Save } from 'lucide-react';
 import { useSchedule } from '@/hooks/useSchedule';
 import { transformFullData } from '@/lib/dataAdapter';
 import { ScheduleGrid } from '@/components/ScheduleGrid';
@@ -301,6 +301,35 @@ export default function GradeView({ matricula, onLogout, onOpenTutorial, onStart
     showGuestSchedule,
     toggleShowGuestSchedule,
   } = useSchedule(matricula, { courses: [], confirmedIds: [], plannedIds: [] });
+
+  const [isSavingPlan, setIsSavingPlan] = useState(false);
+
+  const handleSavePlan = async () => {
+    setIsSavingPlan(true);
+    try {
+      const activeIds = Array.from(plannedIds);
+      const res = await axios.post(`${API_BASE_URL}/api/social/sync_schedule`, {
+        matricula,
+        plannedIds: activeIds
+      });
+      if (res.data.status === 'success') {
+        toast({
+          title: "Grade Salva! 💾",
+          description: `Sua seleção (${activeIds.length} turmas) foi salva no banco. Seus colegas agora verão exatamente essa seleção ao comparar.`,
+        });
+      } else {
+        throw new Error(res.data.message || 'Erro ao salvar grade');
+      }
+    } catch (err: any) {
+      toast({
+        title: "Erro ao salvar",
+        description: err.message || "Não foi possível salvar a grade.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSavingPlan(false);
+    }
+  };
 
   const [socialSearchResults, setSocialSearchResults] = useState<any[]>([]);
 
@@ -729,8 +758,18 @@ export default function GradeView({ matricula, onLogout, onOpenTutorial, onStart
           </div>
         )}
 
-        {/* SYNC & LOGOUT CONTROLS ROW */}
+        {/* SYNC, SAVE & LOGOUT CONTROLS ROW */}
         <div className="flex items-center gap-2 w-full md:w-auto shrink-0">
+          <button
+            onClick={handleSavePlan}
+            disabled={isSavingPlan}
+            className="px-3 py-2 text-xs md:text-sm font-bold transition-all rounded-xl border shrink-0 flex items-center gap-1.5 bg-emerald-600 text-white border-emerald-600 hover:bg-emerald-700 shadow-sm active:scale-95 disabled:opacity-50"
+            title="Salvar sua grade atual no banco de dados para que seus colegas vejam exatamente essa seleção ao comparar"
+          >
+            <Save className="w-3.5 h-3.5" />
+            <span>{isSavingPlan ? "Salvando..." : "Salvar Grade"}</span>
+          </button>
+
           {onStartSync && (
             <button
               onClick={onStartSync}

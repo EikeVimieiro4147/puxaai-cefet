@@ -126,17 +126,44 @@ def stream_logs():
 
 @app.route('/api/data/<matricula>', methods=['GET'])
 def get_data(matricula):
-    print(f"Buscando dados locais para a matricula: {matricula}")
+    matricula_upper = matricula.upper()
+    planned_ids = []
+    
+    # Check local saved plan
+    local_plans_dir = os.path.join(os.path.dirname(__file__), 'data', 'user_plans')
+    local_plan_file = os.path.join(local_plans_dir, f"{matricula_upper}.json")
+    if os.path.exists(local_plan_file):
+        try:
+            with open(local_plan_file, 'r', encoding='utf-8') as f:
+                pdata = json.load(f)
+                planned_ids = pdata.get('plannedIds', [])
+        except Exception:
+            pass
+
+    try:
+        db = init_firebase()
+        if db:
+            user_doc = db.collection('users').document(matricula_upper).get()
+            if user_doc.exists:
+                udata = user_doc.to_dict() or {}
+                if 'plannedIds' in udata and udata['plannedIds']:
+                    planned_ids = udata['plannedIds']
+    except Exception as e:
+        print(f"Aviso Firebase em get_data: {e}")
+
     data_path = os.path.join(os.path.dirname(__file__), 'data', 'clean_data.json')
     if not os.path.exists(data_path):
         data_path = os.path.join(os.path.dirname(__file__), 'output', 'matricula_data.json')
     
     if not os.path.exists(data_path):
-        return jsonify({"status": "success", "data": {"courses": []}}), 200
+        return jsonify({"status": "success", "data": {"courses": [], "user": {"planned_course_ids": planned_ids}}}), 200
         
     try:
         with open(data_path, 'r', encoding='utf-8') as f:
             data = json.load(f)
+        if "user" not in data or not isinstance(data["user"], dict):
+            data["user"] = {}
+        data["user"]["planned_course_ids"] = planned_ids
         return jsonify({"status": "success", "data": data}), 200
     except Exception as e:
         return jsonify({"status": "error", "message": f"Erro ao ler os dados locais: {e}"}), 500
@@ -185,7 +212,8 @@ def toggle_privacy():
         is_public = data.get('isPublic', False)
         
         db = init_firebase()
-        db.collection('users').document(matricula).set({'isPublic': is_public}, merge=True)
+        if db:
+            db.collection('users').document(matricula).set({'isPublic': is_public}, merge=True)
         return jsonify({"status": "success", "isPublic": is_public}), 200
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
@@ -198,57 +226,105 @@ def sync_schedule():
         planned_ids = data.get('plannedIds', [])
         
         db = init_firebase()
-        db.collection('users').document(matricula).set({'plannedIds': planned_ids}, merge=True)
-        return jsonify({"status": "success"}), 200
+        if db:
+            db.collection('users').document(matricula).set({'plannedIds': planned_ids}, merge=True)
+            
+        # Store in local plans directory as fallback
+        local_plans_dir = os.path.join(os.path.dirname(__file__), 'data', 'user_plans')
+        os.makedirs(local_plans_dir, exist_ok=True)
+        local_plan_file = os.path.join(local_plans_dir, f"{matricula}.json")
+        with open(local_plan_file, 'w', encoding='utf-8') as f:
+            json.dump({"plannedIds": planned_ids}, f)
+
+        return jsonify({"status": "success", "plannedIds": planned_ids}), 200
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
 @app.route('/api/social/search', methods=['GET'])
 def search_colleagues():
     try:
-        q = request.args.get('q', '').lower()
-        if not q or len(q) < 3:
+        q = request.args.get('q', '').lower().strip()
+        if not q or len(q) < 2:
             return jsonify({"status": "success", "results": []})
             
-        db = init_firebase()
-        # In Firestore, partial text search is tricky, but since we have a relatively small dataset
-        # or we just fetch all public users and filter in python for now.
-        users_ref = db.collection('users').where('isPublic', '==', True).stream()
         results = []
-        for doc in users_ref:
-            user_data = doc.to_dict()
-            name = user_data.get('nome', '')
-            if q in name.lower():
-                results.append({
-                    "matricula": doc.id,
-                    "nome": name,
-                    "plannedIds": user_data.get('plannedIds', [])
-                })
-                
+        user_ids = set()
+
+        # 1. Search in Firebase
+        try:
+            db = init_firebase()
+            if db:
+                users_ref = db.collection('users').stream()
+                for doc in users_ref:
+                    user_data = doc.to_dict() or {}
+                    name = user_data.get('nome', '')
+                    mat = doc.id
+                    if q in name.lower() or q in mat.lower():
+                        results.append({
+                            "matricula": mat,
+                            "nome": name or mat,
+                            "plannedIds": user_data.get('plannedIds', [])
+                        })
+                        user_ids.add(mat.upper())
+        except Exception as fe:
+            print(f"Aviso Firebase em search_colleagues: {fe}")
+
+        # 2. Search local user plans directory as fallback
+        local_plans_dir = os.path.join(os.path.dirname(__file__), 'data', 'user_plans')
+        if os.path.exists(local_plans_dir):
+            for fname in os.listdir(local_plans_dir):
+                if fname.endswith('.json'):
+                    mat = fname[:-5].upper()
+                    if mat not in user_ids and (q in mat.lower()):
+                        try:
+                            with open(os.path.join(local_plans_dir, fname), 'r', encoding='utf-8') as f:
+                                pdata = json.load(f)
+                                results.append({
+                                    "matricula": mat,
+                                    "nome": mat,
+                                    "plannedIds": pdata.get('plannedIds', [])
+                                })
+                        except Exception:
+                            pass
+
         return jsonify({"status": "success", "results": results}), 200
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
 @app.route('/api/social/schedule/<matricula>', methods=['GET'])
 def get_guest_schedule(matricula):
+    mat_upper = matricula.upper()
+    planned_ids = []
+    nome = mat_upper
+
+    # Check local fallback first
+    local_plan_file = os.path.join(os.path.dirname(__file__), 'data', 'user_plans', f"{mat_upper}.json")
+    if os.path.exists(local_plan_file):
+        try:
+            with open(local_plan_file, 'r', encoding='utf-8') as f:
+                pdata = json.load(f)
+                planned_ids = pdata.get('plannedIds', [])
+        except Exception:
+            pass
+
     try:
         db = init_firebase()
-        doc = db.collection('users').document(matricula.upper()).get()
-        if not doc.exists:
-            return jsonify({"status": "error", "message": "Usuário não encontrado"}), 404
-            
-        user_data = doc.to_dict()
-        if not user_data.get('isPublic', False):
-            return jsonify({"status": "error", "message": "Grade deste usuário é privada"}), 403
-            
-        return jsonify({
-            "status": "success",
-            "matricula": doc.id,
-            "nome": user_data.get('nome', ''),
-            "plannedIds": user_data.get('plannedIds', [])
-        }), 200
+        if db:
+            doc = db.collection('users').document(mat_upper).get()
+            if doc.exists:
+                user_data = doc.to_dict() or {}
+                nome = user_data.get('nome', mat_upper)
+                if 'plannedIds' in user_data:
+                    planned_ids = user_data['plannedIds']
     except Exception as e:
-        return jsonify({"status": "error", "message": str(e)}), 500
+        print(f"Aviso Firebase em get_guest_schedule: {e}")
+
+    return jsonify({
+        "status": "success",
+        "matricula": mat_upper,
+        "nome": nome,
+        "plannedIds": planned_ids
+    }), 200
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
