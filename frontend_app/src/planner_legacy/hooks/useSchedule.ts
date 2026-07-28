@@ -166,8 +166,18 @@ export function useSchedule(matricula?: string, initialData?: { courses?: Course
       }
 
       if ((filters.professors?.length || 0) > 0 && !filters.professors.includes(course.professor)) return false;
-      if ((filters.degrees?.length || 0) > 0 && (!course.degree || !filters.degrees.includes(course.degree))) return false;
-      if ((filters.periods?.length || 0) > 0 && !filters.periods.includes(course.period)) return false;
+      if ((filters.degrees?.length || 0) > 0 && course.degree) {
+        const hasDegreeMatch = filters.degrees.some(d => {
+          const normD = d.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
+          const normC = course.degree.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
+          return normD === normC || normC.includes(normD) || normD.includes(normC);
+        });
+        if (!hasDegreeMatch) return false;
+      }
+      if ((filters.periods?.length || 0) > 0 && course.period !== 0 && course.period !== undefined) {
+        const hasPeriodMatch = filters.periods.some(p => String(p) === String(course.period));
+        if (!hasPeriodMatch) return false;
+      }
 
       const inRange = course.slots.every(
         s => s.startHour >= filters.hourRange[0] && s.endHour <= filters.hourRange[1]
@@ -199,9 +209,6 @@ export function useSchedule(matricula?: string, initialData?: { courses?: Course
     setCourses(newData.courses);
     setConfirmedIds(newData.confirmedIds);
     if (newData.completedCodes) setCompletedCodes(newData.completedCodes);
-
-    const allP = [...new Set(newData.courses.map(c => c.period))].sort((a, b) => a - b);
-    setFilters(f => ({ ...f, periods: allP }));
   }, []);
 
   return {

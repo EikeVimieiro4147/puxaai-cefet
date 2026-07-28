@@ -15,9 +15,11 @@ interface FilterPanelProps {
   allProfessors: string[];
   allDegrees: string[];
   allPeriods: number[];
+  showConfirmed?: boolean;
+  onToggleShowConfirmed?: () => void;
 }
 
-export function FilterPanel({ filters, onChange, allProfessors, allDegrees, allPeriods }: FilterPanelProps) {
+export function FilterPanel({ filters, onChange, allProfessors, allDegrees, allPeriods, showConfirmed, onToggleShowConfirmed }: FilterPanelProps) {
   const [isCollapsed, setIsCollapsed] = React.useState(false);
   const update = (partial: Partial<Filters>) => onChange({ ...filters, ...partial });
 
@@ -152,9 +154,20 @@ export function FilterPanel({ filters, onChange, allProfessors, allDegrees, allP
                 className="h-3.5 w-3.5"
               />
               <Clock className="w-3.5 h-3.5" />
-              Ocultar conflitos de horário
+              Ocultar conflitos de horário (Sem Conflitos)
             </label>
 
+            {onToggleShowConfirmed && (
+              <label className="flex items-center gap-2 text-xs cursor-pointer text-amber-700 hover:text-amber-800 transition-colors font-medium">
+                <Checkbox
+                  checked={!showConfirmed}
+                  onCheckedChange={() => onToggleShowConfirmed()}
+                  className="h-3.5 w-3.5"
+                />
+                {!showConfirmed ? <EyeOff className="w-3.5 h-3.5 text-amber-600" /> : <Eye className="w-3.5 h-3.5 text-slate-400" />}
+                Ocultar Matérias Fixas / Inscritas
+              </label>
+            )}
 
             <label className="flex items-center gap-2 text-xs cursor-pointer text-muted-foreground hover:text-foreground transition-colors font-medium">
               <Checkbox

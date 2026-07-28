@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronRight, ChevronDown, Clock, Users2, Lock, Plus, Check, Sparkles } from 'lucide-react';
+import { ChevronRight, ChevronDown, Clock, Users2, Lock, Plus, Check, Sparkles, Search } from 'lucide-react';
 import { type Course, type CourseStatus } from '@/types/schedule';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { slotsOverlap } from '@/hooks/useSchedule';
@@ -15,6 +15,8 @@ interface GradeLeftSidebarProps {
   hoveredId?: string | null;
   plannedIds: Set<string>;
   completedCodes: string[];
+  searchText?: string;
+  onSearchChange?: (val: string) => void;
 }
 
 export function GradeLeftSidebar({
@@ -25,7 +27,9 @@ export function GradeLeftSidebar({
   onHover,
   hoveredId,
   plannedIds,
-  completedCodes
+  completedCodes,
+  searchText = '',
+  onSearchChange
 }: GradeLeftSidebarProps) {
   const [expandedDisciplines, setExpandedDisciplines] = useState<Set<string>>(new Set());
   const [isOptativasExpanded, setIsOptativasExpanded] = useState(false);
@@ -77,9 +81,24 @@ export function GradeLeftSidebar({
 
   return (
     <div className="flex flex-col h-full bg-white w-[339px] max-w-full overflow-hidden">
-      <div className="p-4 border-b border-slate-200">
-        <h2 className="text-sm font-black text-primary uppercase tracking-wider">Disciplinas</h2>
-        <p className="text-xs text-slate-500 mt-1">{coreDisciplineNames.length + electiveDisciplineNames.length} disponíveis</p>
+      <div className="p-4 border-b border-slate-200 space-y-2">
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-black text-primary uppercase tracking-wider">Disciplinas</h2>
+          <span className="text-xs font-bold text-slate-500">{coreDisciplineNames.length + electiveDisciplineNames.length} disponíveis</span>
+        </div>
+
+        {onSearchChange && (
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Buscar matéria ou código..."
+              value={searchText}
+              onChange={e => onSearchChange(e.target.value)}
+              className="w-full pl-8 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:ring-2 focus:ring-primary/40 text-slate-700 font-medium"
+            />
+          </div>
+        )}
       </div>
 
       <div className="flex-1 overflow-y-auto overflow-x-hidden p-3 space-y-2">
